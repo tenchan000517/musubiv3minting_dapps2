@@ -1,0 +1,73 @@
+.app-header {
+    background-color: #333;
+    color: #fff;
+    padding: 1rem 0;
+    position: relative; /* 追加 */
+}
+
+.app-header .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.app-header .logo {
+    color: #fff;
+    text-decoration: none;
+    font-size: 2rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+}
+
+.app-header .logo img {
+    height: 2rem;
+    margin-right: 0.5rem;
+}
+
+.hamburger-icon {
+    display: none;
+    cursor: pointer;
+    font-size: 24px;
+    color: #fff;
+    margin-right: 30px;
+}
+
+.nav-item {
+    color: #fff;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+.active {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.nav-closed {
+    display: none;
+}
+
+@media (max-width: 1126px) {
+    .hamburger-icon {
+        display: block;
+    }
+
+    .nav-open {
+        display: flex;
+        flex-direction: column;
+        position: absolute;
+        top: 100%;
+        right: 20px;
+        background-color: #3f3f3f;
+        z-index: 0;
+        width: 200px; /* 追加: メニューの幅を設定 */
+    }
+
+    .nav-item {
+        text-align: center; /* 追加: テキストを中央に配置 */
+    }
+}

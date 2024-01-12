@@ -1,0 +1,18 @@
+{
+  "CONTRACT_ADDRESS": "0x7C62A9Fed3e933dffdd849251971689be9dBC092",
+  "SCAN_LINK": "https://goerli.etherscan.io/token/0x7C62A9Fed3e933dffdd849251971689be9dBC092",
+  "NETWORK": {
+    "NAME": "Ethereum",
+    "SYMBOL": "ETH",
+    "ID": 5
+  },
+  "NFT_NAME": "PaoGene",
+  "SYMBOL": "PG",
+  "MAX_SUPPLY": 8080,
+  "WEI_COST": 1000000000000000,
+  "DISPLAY_COST": 0.001,
+  "GAS_LIMIT": 285000,
+  "MARKETPLACE": "Opeansea",
+  "MARKETPLACE_LINK": "https://opensea.io/ja/collection/musubicollection",
+  "SHOW_BACKGROUND": true
+}

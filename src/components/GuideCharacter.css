@@ -1,0 +1,28 @@
+/* GuideCharacter.css */
+
+.guide-character {
+    display: flex;
+    align-items: center;
+    gap: 20px; /* キャラクターとメッセージボックスの間隔を設定 */
+}
+
+.guide-character img {
+    width: 150px; /* キャラクターのサイズを小さくする */
+    height: auto;
+}
+
+.message-box {
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 10px 20px;
+    border-radius: 10px;
+    max-width: 60%; /* メッセージボックスの最大幅を設定 */
+    text-align: center;
+}
+
+.guide-character p {
+    font-size: 16px;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+

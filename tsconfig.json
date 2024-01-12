@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+      "outDir": "./dist", // TypeScriptのコンパイル結果を出力するディレクトリ
+      "noImplicitAny": true, // any型を暗黙的に使用することを禁止
+      "module": "es6", // モジュールシステムの種類
+      "target": "es5", // 出力するECMAScriptバージョン
+      "jsx": "react", // JSXの構文をどのように扱うか
+      "allowJs": true // JavaScriptファイルのコンパイルを許可
+    }
+  }
+  

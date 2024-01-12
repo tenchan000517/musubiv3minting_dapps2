@@ -1,5 +1,11 @@
 .App {
+  font-family: 'Arial', sans-serif;
+  background-color: #f4f4f4;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   text-align: center;
+  line-height: 1.6; /* 1.6 は一般的な値ですが、お好みに合わせて調整してください */
 }
 
 .App-logo {
@@ -35,4 +41,35 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+main {
+  flex: 1;
+  padding: 20px;
+}
+
+/* ボタンとコンポーネントのスタイリング */
+.main-component-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  gap: 20px; /* ボタン間のスペース */
+  padding-top: 10vh; /* 上部のスペース */
+  min-height: 80vh; /* コンテナの最小高さ */
+}
+
+.App main {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  margin: auto; /* 中央に配置 */
+}
+
+.App main > * {
+  width: 100%;
+  max-width: 600px; /* ここで最大幅を設定 */
+  margin: 0 auto;
+  padding: 20px;
+  text-align: left; /* テキストを左寄せに */
 }
