@@ -4,7 +4,6 @@
     padding: 0.4rem 0;
     position: relative; /* 追加 */
     height: 80px;
-
 }
 
 .app-header .container {
@@ -13,6 +12,17 @@
     align-items: center;
     max-width: 1200px;
     margin: 0 auto;
+    position: relative; /* 相対位置 */
+}
+
+.logo-container {
+    padding-left: 20px; /* 左側に余白を追加 */
+    margin-right: auto; /* 右にスペースを作る */
+}
+
+.header-content {
+    padding-right: 20px; /* 左側に余白を追加 */
+    margin-left: auto; /* 左にスペースを作る */
 }
 
 .app-header .logo {
@@ -27,10 +37,75 @@
 .app-header .logo img {
     height: 2rem;
     margin-right: 0.5rem;
+    transition: height 0.3s ease; /* サイズ変更時のアニメーション効果 */
+
 }
 
 .container img {
     width: 150px; /* キャラクターのサイズを小さくする */
     height: auto;
 }
+
+.navi-container {
+    display: flex; /* フレキシブルな配置に */
+    gap: 30px; /* 画像間の間隔 */
+    align-items: center; /* 垂直方向の中央揃え */
+    padding-right: 0.5rem;
+
+  }
+  
+  .navi-image {
+    width: 70px !important; /* 画像のサイズ */
+    height: 70px !important; /* 画像のサイズ */
+    animation: navi-move 3s infinite alternate ease-in-out;
+  }
+
+  @media (max-width: 1080px) {
+    .header-content {
+        display: none; /* 1080px以下ではheader-contentを非表示に */
+    }
+
+    .logo-container, .navi-container {
+        display: flex; /* logo-containerとnavi-containerを表示 */
+        margin: 0 auto; /* 中央寄せ */
+    }
+
+    .navi-container {
+        position: static; /* 絶対位置指定を解除 */
+        transform: none; /* トランスフォームを無効化 */
+    }
+}
+  
+
+  @media (max-width: 768px) {
+    .app-header .logo img {
+        height: 1.5rem; /* 画面幅が小さい場合、ロゴを少し小さくする */
+    }
+
+    .navi-container {
+        display: flex; /* フレキシブルな配置に */
+        gap: 5px; /* 画像間の間隔 */
+        align-items: center; /* 垂直方向の中央揃え */
+      }
+
+    .navi-image {
+      width: 10px; /* モバイルでの画像のサイズをさらに小さく */
+      height: 10px; /* モバイルでの画像のサイズをさらに小さく */
+    }
+
+    .navi-container .navi-image:nth-child(3),
+    .navi-container .navi-image:nth-child(4) {
+        display: none; /* navi3とnavi4を非表示にする */
+    }
+
+  }
+  
+  @keyframes navi-move {
+    from {
+      transform: translateX(-10px); /* 左へ移動 */
+    }
+    to {
+      transform: translateX(10px); /* 右へ移動 */
+    }
+  }
 
