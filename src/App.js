@@ -1,28 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useSelector } from 'react-redux';
+
 import Header from './components/Header';
 import Footer from './components/Footer';
-import GuideCharacter from './components/GuideCharacter';
-import ProgressBar from './components/ProgressBar';
-import HomePage from './pages/index';
-import MintNftPage from './pages/mint-nft';
-import MintNftView from './pages/view-nft';
-import NFTImageDownloader from './pages/download-nft';
-import { ProgressProvider } from './contexts/ProgressContext';
 import OCRComponent from './components/OCRComponent';
-
-import NotFound from './pages/NotFound';
-
-import { Goerli } from "@thirdweb-dev/chains";
+import WalletConnect from './components/WalletConnect';
 import { smartWallet, metamaskWallet, coinbaseWallet, walletConnect, localWallet, embeddedWallet } from "@thirdweb-dev/react";
-import { WalletProvider } from './contexts/WalletContext'; // WalletProviderをインポート
-import { ThirdwebProvider } from "@thirdweb-dev/react";
-
-
+import { WalletProvider } from './contexts/WalletContext';
+import { ThirdwebProvider, Web3Button } from "@thirdweb-dev/react";
 import './App.css';
 
 const CLIENT_ID = process.env.REACT_APP_CLIENT_ID;
-const SECRET_KEY = process.env.REACT_APP_SECRET_KEY;
 const FACTORY_ADDRESS = process.env.REACT_APP_FACTORY_ADDRESS;
 
 const smartWalletOptions = {
@@ -31,79 +19,131 @@ const smartWalletOptions = {
 };
 
 function App() {
-  const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 4;
-  const location = useLocation();
+  const [mintAmount, setMintAmount] = useState(1);
+  const walletAddress = useSelector((state) => state.blockchain.walletData?.address);
+  const isConnected = !!walletAddress;
 
-  useEffect(() => {
-    switch(location.pathname) {
-      case "/":
-        setCurrentStep(1);
-        break;
-      case "/mint-nft":
-        setCurrentStep(2);
-        break;
-      case "/view-nft":
-        setCurrentStep(3); // ここが重要です！
-        break;
-      case "/download-nft":
-        setCurrentStep(4);
-        break;
-      default:
-        setCurrentStep(1);
+  const incrementMintAmount = () => {
+    setMintAmount(mintAmount + 1);
+  };
+
+  const decrementMintAmount = () => {
+    if (mintAmount > 1) {
+      setMintAmount(mintAmount - 1);
     }
-  }, [location]);
+  };
+
+  const paymentUrl = `https://paypiement.xyz/ja/projects/0e483200-a017-4961-9bce-457f2da1cdc8?recipientAddress=${walletAddress}&quantity=${mintAmount}`;
+
+  const handleSuccess = (tx) => {
+    console.log("Transaction successful!", tx);
+  };
+
+  const sectionStyle = {
+    backgroundImage: `url(/logo512.jpg)`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundAttachment: 'fixed' /* パララックス効果を適用 */
+  };
+  
+  const overlayStyle = {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.7)', // 白基調の半透明オーバーレイ
+    zIndex: -1 // 背景の後ろに配置
+  };
+  
+  const contentStyle = {
+    position: 'relative',
+    zIndex: 2 // オーバーレイよりも前に配置
+  };
+
+  const walletConnectStyle = isConnected ? {} : {
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '100%' // 高さを100%に設定
+  };
+
+  const leftSideStyle = isConnected ? {} : { maxWidth: '400px', margin: 'auto', marginTop: '100px' };
+  const rightSideStyle = isConnected ? {} : { display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '50%', backgroundColor: 'rgba(255, 255, 255, 0)' };
+
+
+  const mintframeSideStyle = isConnected ? {} : {
+    backgroundColor: 'rgba(255, 255, 255, 0)', // 半透明の白色
+  };
+
+  const buttonClass = isConnected ? "" : "custom-web3-button";
 
   return (
-            <ThirdwebProvider 
-                clientId={CLIENT_ID} 
-                secretKey={SECRET_KEY} 
-                supportedChains={[Goerli]} 
-                supportedWallets={[
-                    smartWallet(metamaskWallet({ recommended: true }), smartWalletOptions),
-                    smartWallet(coinbaseWallet(), smartWalletOptions),
-                    smartWallet(walletConnect(), smartWalletOptions),
-                    smartWallet(localWallet(), smartWalletOptions),
-                    embeddedWallet(),
-                ]}
-            >
+    <ThirdwebProvider 
+      clientId={CLIENT_ID} 
+      activeChain={"polygon"}
+      supportedWallets={[
+        smartWallet(metamaskWallet({ recommended: true })),
+        smartWallet(coinbaseWallet()),
+        smartWallet(walletConnect()),
+        smartWallet(localWallet()),
+        embeddedWallet(),
+      ]}
+    >
+      <WalletProvider>
+        <div className="App"style={{ ...sectionStyle, ...contentStyle }}>
+        <div style={overlayStyle}></div>
 
-<WalletProvider>
+          <Header />
+          <main className="main-content" style={walletConnectStyle}>
+       
+          <div className="left-side" style={leftSideStyle}>
+            <img src="/logo192.jpg" alt="NFT" className="nft-image" />
+            </div>
+          
+          
+            <div className="right-side" style={rightSideStyle}>
+            <div className='mint-frame' style={mintframeSideStyle}>
+              <div className='wallet-connect'>
+              <WalletConnect />
+              </div>
 
-    <div className="App">
-      <Header />
-      <GuideCharacter currentStep={currentStep} />
-      <ProgressBar currentStep={currentStep} totalSteps={totalSteps} />
-      <main>
-        <Routes>
-          <Route path="/" element={<HomePage currentStep={currentStep} setCurrentStep={setCurrentStep} />} />
-          <Route path="/mint-nft" element={<MintNftPage currentStep={currentStep} setCurrentStep={setCurrentStep} />} />
-          <Route path="/view-nft" element={<MintNftView currentStep={currentStep} setCurrentStep={setCurrentStep} />} />
-          <Route path="/download-nft" element={<NFTImageDownloader currentStep={currentStep} setCurrentStep={setCurrentStep} />} />
-          <Route path="*" element={<NotFound />} />
-          <Route path="/ocr" element={<OCRComponent />} />
+              {isConnected && (
+                <div className="mint-container">
+                  <div className="mint-controls">
+                    <button className="controls-button" onClick={decrementMintAmount}>-1</button>
+                    <span className='mint-amount'>{mintAmount}</span>
+                    <button className="controls-button" onClick={incrementMintAmount}>+1</button>
+                  </div>
+                  <div className='web3button-container'>
+                  <Web3Button
+                    contractAddress="0xA982c7045EEeA4705da14611BFaA10e18dea90cE"
+                    action={async (contract) => {
+                      await contract.erc721.claim(mintAmount);
+                    }}
+                    className="custom-web3-button"
+                    onSuccess={handleSuccess}
+                  >
+                    Ehereum(仮想通貨)で決済
+                  </Web3Button>
+                  </div>
+                  <div className='credit-card-container'>
+                  <a href={paymentUrl} target="_blank" rel="noopener noreferrer" className="credit-card-button">
+                    クレジットカードで決済
+                  </a>
+                  </div>
+                </div>
+              )}
+            </div>
+        </div>
 
-        </Routes>
-      </main>
-      <Footer />
-    </div>
-    
-</WalletProvider>
-
+          </main>
+          <Footer />
+        </div>
+      </WalletProvider>
     </ThirdwebProvider>
   );
 }
 
-// Routerコンポーネントを使用するために、Appをラップする別のコンポーネントを作成
-function AppWrapper() {
-  return (
-    <ProgressProvider>
-      <Router>
-        <App />
-      </Router>
-    </ProgressProvider>
-  );
-}
-
-
-export default AppWrapper;
+export default App;

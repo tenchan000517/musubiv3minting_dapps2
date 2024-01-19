@@ -1,8 +1,10 @@
 .app-header {
-    background-color: #333;
+    background-color: rgba(240, 236, 175, 0.5);
     color: #fff;
-    padding: 1rem 0;
+    padding: 0.4rem 0;
     position: relative; /* 追加 */
+    height: 80px;
+
 }
 
 .app-header .container {
@@ -27,47 +29,8 @@
     margin-right: 0.5rem;
 }
 
-.hamburger-icon {
-    display: none;
-    cursor: pointer;
-    font-size: 24px;
-    color: #fff;
-    margin-right: 30px;
+.container img {
+    width: 150px; /* キャラクターのサイズを小さくする */
+    height: auto;
 }
 
-.nav-item {
-    color: #fff;
-    text-decoration: none;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    transition: background-color 0.3s;
-}
-
-.active {
-    background-color: rgba(255, 255, 255, 0.2);
-}
-
-.nav-closed {
-    display: none;
-}
-
-@media (max-width: 1126px) {
-    .hamburger-icon {
-        display: block;
-    }
-
-    .nav-open {
-        display: flex;
-        flex-direction: column;
-        position: absolute;
-        top: 100%;
-        right: 20px;
-        background-color: #3f3f3f;
-        z-index: 0;
-        width: 200px; /* 追加: メニューの幅を設定 */
-    }
-
-    .nav-item {
-        text-align: center; /* 追加: テキストを中央に配置 */
-    }
-}

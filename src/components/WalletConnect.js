@@ -30,10 +30,17 @@ const WalletConnect = ({ children }) => {
         dispatch({ type: SET_WALLET_DATA, payload: walletData });
     }
 
+    const buttonClass = address ? "" : "custom-web3-button";
+
     return (
         <>
-            <ConnectWallet theme={"dark"} modalSize={"compact"} onConnect={handleConnect} />
-            {children}
+        <ConnectWallet
+            theme={"dark"}
+            modalSize={"compact"}
+            onConnect={handleConnect}
+            className={buttonClass}
+        />
+        {children}
         </>
     );
 };
