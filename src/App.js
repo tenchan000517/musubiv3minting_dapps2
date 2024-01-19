@@ -17,6 +17,7 @@ function App() {
   const [mintAmount, setMintAmount] = useState(1);
   const walletAddress = useSelector((state) => state.blockchain.walletData?.address);
   const isConnected = !!walletAddress;
+  const [creditCardButtonText, setCreditCardButtonText] = useState("クレジットカードで決済");
 
   const incrementMintAmount = () => {
     setMintAmount(mintAmount + 1);
@@ -82,6 +83,25 @@ function App() {
         console.log('Smart Contract Data:', smartContractData);
       }
     }, [smartContractData]);
+
+    useEffect(() => {
+      const handleResize = () => {
+        if (window.innerWidth >= 768 && window.innerWidth <= 1080) {
+          setCreditCardButtonText("クレカ決済");
+        } else {
+          setCreditCardButtonText("クレジットカード　決済");
+        }
+      };
+    
+      // イベントリスナーを設定
+      window.addEventListener("resize", handleResize);
+    
+      // 初期ロード時にもチェック
+      handleResize();
+    
+      // クリーンアップ関数
+      return () => window.removeEventListener("resize", handleResize);
+    }, []);
 
 return (
   <ThirdwebProvider 
@@ -149,7 +169,7 @@ return (
 
                       <div className='credit-card-container'>
                           <a href={paymentUrl} target="_blank" rel="noopener noreferrer" className="credit-card-button">
-                            クレジットカードで決済
+                          {creditCardButtonText}
                           </a>
                       </div>
 

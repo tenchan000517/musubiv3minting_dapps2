@@ -34,24 +34,27 @@
 
 .info {
   width: 95%;
+  height: 70px;
   margin-top: 10px;
   padding: 10px;
+  justify-content: center; /* 中央に配置 */
+  display: flex;
+  flex-direction: column;
   border-radius: 5px;
   background-color: rgba(207, 127, 108, 0.8); /* 半透明の背景色 */
 }
 
 .info h3{
+  margin: 0;
   color: #ffffff;
-  font-size: 1.8em;
+  font-size: 1.3em;
 }
 
 .info span{
+  margin-top: 0;
   color: #ffffff;
-  font-size: 2em;
-}
-
-.info h3, .info span {
-  margin: 10px 0; /* テキスト間の距離を狭める */
+  font-size: 1.5em;
+  font-weight: bold; /* 太字に設定 */
 }
 
 .right-side {
@@ -106,12 +109,18 @@
   padding: 10px;
 }
 
+.mint-container h3 {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
 .mint-controls {
   display: flex; /* Flexboxを使用 */
   justify-content: center; /* 水平方向の中央揃え */
   align-items: center; /* 垂直方向の中央揃え */
   padding: 10px;
-  margin-bottom: 20px;
+  padding-top: 0;
+  margin-bottom: 0;
 }
 
 .wallet-connect {
@@ -130,7 +139,8 @@
 }
 
 .controls-button {
-padding: 20px 23px;
+width: 20%; /* 幅を％で指定 */
+height: 40px; /* 高さを％で指定 */
 border-radius: 50%;
 border: none;
 background-color: #212071;
@@ -140,7 +150,6 @@ cursor: pointer;
 transition: background-color 0.3s ease;
 font-size: 1.2em;
 margin: 0 10px; /* ボタン間の距離を広げる */
-
 }
 
 .controls-button:hover {
@@ -168,6 +177,8 @@ transition: transform 0.3s ease, box-shadow 0.3s ease;
   border-radius: 12px;
   text-decoration: none;
   transition: background-color 0.3s;
+  font-weight: bold; /* 太字に設定 */
+
 }
 
 .custom-web3-button {
@@ -179,10 +190,9 @@ transition: transform 0.3s ease, box-shadow 0.3s ease;
   border-radius: 12px !important;
   text-decoration: none !important;
   transition: background-color 0.3s !important;
-}
-
-.custom-web3-button {
   font-size: 1.2em !important; /* テキストサイズを大きくする */
+  font-weight: bold !important; /* 太字に設定 */
+
 }
 
 .custom-web3-button:hover {
@@ -208,8 +218,29 @@ transition: transform 0.3s ease, box-shadow 0.3s ease;
 
 /* モバイルビューの場合のスタイル調整 */
 @media (max-width: 1080px) {
+  .custom-web3-button {
+    width: 50% !important; /* 幅を％で指定 */
+    font-size: 1em !important; /* テキストサイズを大きくする */
+    }
+
+    .credit-card-button {
+      width: 50%;    
+    }
+
+}
+
+@media (max-width: 768px) {
   .main-content {
     flex-direction: column; /* モバイルでは縦並び */
+  }
+
+  .mint-container h3 {
+    margin-bottom: 0;
+  }
+
+  .info {
+    height: 50px;
+    padding: 5px; /* 内部の余白を小さくする */
   }
 
   .left-side, .right-side {
@@ -223,6 +254,7 @@ transition: transform 0.3s ease, box-shadow 0.3s ease;
   .mint-controls {
     flex-direction: row; /* 横並びに変更 */
     justify-content: space-around; /* コンテンツを均等に配置 */
+    padding-top: 0;
   }
 
   .custom-web3-button {
@@ -234,8 +266,33 @@ transition: transform 0.3s ease, box-shadow 0.3s ease;
   }
 
   .controls-button {
-    padding: 15px ;
+    width: 20%;
+
     font-size: 1.8em;
     }
+
+  .left-side {
+    padding-bottom: 0;
+    margin-bottom: 5px; /* 下部の余白を縮める */
+    background-color: rgba(255, 255, 255, 0); /* 半透明の背景色を設定 */
+  }
+
+  .right-side {
+    padding-top: 0;
+    margin-top: 5px; /* 上部の余白を縮める */
+  }
+
+  .info h3{
+    font-size: 1em;
+  }
+
+  .info span{
+    font-size: 1em;
+  }
+
+  .info h3, .info span {
+    margin: 1px 0; /* 上下のマージンを縮める */
+  }
+
 
 }
