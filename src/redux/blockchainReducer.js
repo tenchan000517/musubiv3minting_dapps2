@@ -1,3 +1,4 @@
+// blockchainReducer.js
 const initialState = {
   loading: false,
   errorMsg: "",

@@ -1,6 +1,7 @@
+// store.js
 import { applyMiddleware, compose, createStore, combineReducers } from "redux";
 import thunk from "redux-thunk";
-import blockchainReducer from './blockchainReducer'; // typoを修正
+import blockchainReducer from './blockchainReducer';
 import dataReducer from "./dataReducer";
 
 const rootReducer = combineReducers({

@@ -4,6 +4,7 @@ import Web3 from "web3";
 import { fetchCollectionData } from "./dataActions";
 import contracts from '../contracts/config';
 import { useWallets } from "@thirdweb-dev/react"; // thirdwebのウォレットフックをインポート
+import { fetchSmartContractData } from './dataActions'; // 適切なパスを使用
 
 // Action Types
 const CONNECTION_REQUEST = "CONNECTION_REQUEST";
@@ -81,6 +82,9 @@ export const connectToBlockchain = () => async (dispatch) => {
     window.ethereum.on("chainChanged", () => {
       window.location.reload();
     });
+
+    // スマートコントラクトからデータを取得
+    // dispatch(fetchSmartContractData());
 
   } catch (error) {
     dispatch(connectFailed("An error occurred while connecting to the blockchain."));

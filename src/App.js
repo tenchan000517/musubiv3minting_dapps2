@@ -1,22 +1,17 @@
-import React, { useState } from 'react';
-import { useSelector } from 'react-redux';
-
+import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { connectToBlockchain } from './redux/blockchainActions';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import OCRComponent from './components/OCRComponent';
 import WalletConnect from './components/WalletConnect';
-import { smartWallet, metamaskWallet, coinbaseWallet, walletConnect, localWallet, embeddedWallet } from "@thirdweb-dev/react";
+import ContractDataFetcher from './components/ContractDataFetcher';
+import { metamaskWallet, coinbaseWallet, walletConnect, localWallet, embeddedWallet } from "@thirdweb-dev/react";
 import { WalletProvider } from './contexts/WalletContext';
-import { ThirdwebProvider, Web3Button } from "@thirdweb-dev/react";
+import { ThirdwebProvider, Web3Button,useContract, useContractRead } from "@thirdweb-dev/react";
 import './App.css';
 
 const CLIENT_ID = process.env.REACT_APP_CLIENT_ID;
-const FACTORY_ADDRESS = process.env.REACT_APP_FACTORY_ADDRESS;
-
-const smartWalletOptions = {
-    factoryAddress: FACTORY_ADDRESS,
-    gasless: true,
-};
 
 function App() {
   const [mintAmount, setMintAmount] = useState(1);
@@ -77,72 +72,97 @@ function App() {
     backgroundColor: 'rgba(255, 255, 255, 0)', // 半透明の白色
   };
 
-  const buttonClass = isConnected ? "" : "custom-web3-button";
+    // Reduxストアからデータを取得
+    const smartContractData = useSelector((state) => state.data.smartContractData);
 
-  return (
-    <ThirdwebProvider 
+
+    // データが更新されたときにコンソールに出力
+    useEffect(() => {
+      if (smartContractData) {
+        console.log('Smart Contract Data:', smartContractData);
+      }
+    }, [smartContractData]);
+
+return (
+  <ThirdwebProvider 
       clientId={CLIENT_ID} 
       activeChain={"polygon"}
       supportedWallets={[
-        smartWallet(metamaskWallet({ recommended: true })),
-        smartWallet(coinbaseWallet()),
-        smartWallet(walletConnect()),
-        smartWallet(localWallet()),
+        metamaskWallet({ recommended: true }),
+        coinbaseWallet(),
+        walletConnect(),
+        localWallet(),
         embeddedWallet(),
       ]}
-    >
-      <WalletProvider>
-        <div className="App"style={{ ...sectionStyle, ...contentStyle }}>
-        <div style={overlayStyle}></div>
+  >
+    <WalletProvider>
+        <ContractDataFetcher contractAddress="0xA982c7045EEeA4705da14611BFaA10e18dea90cE" />
 
-          <Header />
-          <main className="main-content" style={walletConnectStyle}>
+    <div className="App"style={{ ...sectionStyle, ...contentStyle }}>
+                  <div style={overlayStyle}></div>
+
+                  <Header />
+
+      <main className="main-content" style={walletConnectStyle}>
        
           <div className="left-side" style={leftSideStyle}>
-            <img src="/logo192.jpg" alt="NFT" className="nft-image" />
-            </div>
-          
-          
-            <div className="right-side" style={rightSideStyle}>
-            <div className='mint-frame' style={mintframeSideStyle}>
-              <div className='wallet-connect'>
-              <WalletConnect />
-              </div>
-
-              {isConnected && (
-                <div className="mint-container">
-                  <div className="mint-controls">
-                    <button className="controls-button" onClick={decrementMintAmount}>-1</button>
-                    <span className='mint-amount'>{mintAmount}</span>
-                    <button className="controls-button" onClick={incrementMintAmount}>+1</button>
-                  </div>
-                  <div className='web3button-container'>
-                  <Web3Button
-                    contractAddress="0xA982c7045EEeA4705da14611BFaA10e18dea90cE"
-                    action={async (contract) => {
-                      await contract.erc721.claim(mintAmount);
-                    }}
-                    className="custom-web3-button"
-                    onSuccess={handleSuccess}
-                  >
-                    Ehereum(仮想通貨)で決済
-                  </Web3Button>
-                  </div>
-                  <div className='credit-card-container'>
-                  <a href={paymentUrl} target="_blank" rel="noopener noreferrer" className="credit-card-button">
-                    クレジットカードで決済
-                  </a>
-                  </div>
+              <img src="/logo192.jpg" alt="NFT" className="nft-image" />
+                <div className='info'>
+                    <h3>Mint Price : 0.03ETH</h3>
+                    <span>{"8"} / 10</span>
                 </div>
-              )}
-            </div>
-        </div>
+          </div>
+          
+          
+          <div className="right-side" style={rightSideStyle}>
+            <div className='mint-frame' style={mintframeSideStyle}>
 
-          </main>
-          <Footer />
-        </div>
-      </WalletProvider>
-    </ThirdwebProvider>
+                    <div className='wallet-connect'>
+                    <WalletConnect />
+                    </div>
+
+                  {isConnected && (
+                    <div className="mint-container">
+
+                      <h3>Mint Amount</h3>
+
+                      <div className="mint-controls">
+
+                          <button className="controls-button" onClick={decrementMintAmount}>-</button>
+                          <span className='mint-amount'>{mintAmount}</span>
+                          <button className="controls-button" onClick={incrementMintAmount}>+</button>
+                      
+                      </div>
+
+                      <div className='web3button-container'>
+                          <Web3Button
+                            contractAddress="0xA982c7045EEeA4705da14611BFaA10e18dea90cE"
+                            action={async (contract) => {
+                              await contract.erc721.claim(mintAmount);
+                            }}
+                            className="custom-web3-button"
+                            onSuccess={handleSuccess}
+                          >
+                            Mint（0.03ETH）
+                          </Web3Button>
+                      </div>
+
+                      <div className='credit-card-container'>
+                          <a href={paymentUrl} target="_blank" rel="noopener noreferrer" className="credit-card-button">
+                            クレジットカードで決済
+                          </a>
+                      </div>
+
+                    </div>
+                  )}
+            </div>
+          </div>
+
+      </main>
+        <Footer />
+    </div>
+    </WalletProvider>
+  </ThirdwebProvider>
   );
 }
 

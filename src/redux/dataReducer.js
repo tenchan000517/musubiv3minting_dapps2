@@ -1,7 +1,8 @@
-// 初期状態を更新
+// dataReducer.js
 const initialState = {
     songs: [],
-    nftData: [],  // 新しいプロパティを追加
+    nftData: [],
+    smartContractData: {}, // スマートコントラクトデータの初期ステート
 };
 
 const dataReducer = (state = initialState, action) => {
@@ -10,6 +11,10 @@ const dataReducer = (state = initialState, action) => {
             return { ...state, songs: action.payload };
         case 'SET_NFT_DATA':  // 新しいアクションタイプに対する処理
             return { ...state, nftData: action.payload };
+        case 'SET_SMART_CONTRACT_DATA':
+            return {
+                ...state,
+                smartContractData: action.payload, };
         default:
             return state;
     }
