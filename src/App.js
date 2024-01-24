@@ -1,60 +1,88 @@
 import React, { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { connectToBlockchain } from './redux/blockchainActions';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchData } from './redux/dataActions'; // fetchData をインポート
+import { disconnect } from './redux/blockchainActions'; // disconnect アクションをインポート
+
 import Header from './components/Header';
 import Footer from './components/Footer';
-import OCRComponent from './components/OCRComponent';
 import WalletConnect from './components/WalletConnect';
-import ContractDataFetcher from './components/ContractDataFetcher';
+import useMetaData from './Hook/useMetaData';
+import Mint from './components/MintNFT';
 import { metamaskWallet, coinbaseWallet, walletConnect, localWallet, embeddedWallet } from "@thirdweb-dev/react";
-import { WalletProvider } from './contexts/WalletContext';
-import { ThirdwebProvider, Web3Button,useContract, useContractRead } from "@thirdweb-dev/react";
+import { ThirdwebProvider } from "@thirdweb-dev/react";
 import './App.css';
 
 const CLIENT_ID = process.env.REACT_APP_CLIENT_ID;
 
 function App() {
-  const [mintAmount, setMintAmount] = useState(1);
-  const walletAddress = useSelector((state) => state.blockchain.walletData?.address);
-  const isConnected = !!walletAddress;
-  const [creditCardButtonText, setCreditCardButtonText] = useState("クレジットカードで決済");
+  const [config, setConfig] = useState(null);
 
-  const incrementMintAmount = () => {
-    setMintAmount(mintAmount + 1);
-  };
+  const dispatch = useDispatch();
+  const blockchain = useSelector((state) => state.blockchain);
+  const data = useSelector((state) => state.data);
 
-  const decrementMintAmount = () => {
-    if (mintAmount > 1) {
-      setMintAmount(mintAmount - 1);
+    console.log("App: WalletAddress", blockchain.account);
+
+  const isConnected = !!blockchain.account;
+  
+  useMetaData(); // Appコンポーネントでメタデータフックを使用
+
+  // コンポーネントがマウントされたときにウォレット接続を試みる
+  useEffect(() => {
+    console.log("App: blockchain.account 変更検出", blockchain.account);
+
+    if (blockchain.account) {
+      dispatch(fetchData(blockchain.account));
+    } else {
+      dispatch(disconnect()); // アカウントが null になった場合、disconnect アクションをディスパッチ
     }
-  };
+  }, [blockchain.account, dispatch]); 
 
-  const paymentUrl = `https://paypiement.xyz/ja/projects/0e483200-a017-4961-9bce-457f2da1cdc8?recipientAddress=${walletAddress}&quantity=${mintAmount}`;
+  useEffect(() => {
+    const fetchConfig = async () => {
+      try {
+        const response = await fetch('/config/Config.json');
+        const configData = await response.json();
+        setConfig(configData); // Configデータをローカル状態に設定
+        console.log("Configデータ:", configData); // ログ出力を追加
 
-  const handleSuccess = (tx) => {
-    console.log("Transaction successful!", tx);
-  };
+      } catch (error) {
+        console.error('Config.jsonの読み込みに失敗しました', error);
+      }
+    };
+
+    fetchConfig();
+  }, []);
+
+    // configの状態を使用してUIをレンダリング
+    if (!config) {
+      return <div>Loading...</div>;
+    }
+
+    // BigNumber形式のTotalSupplyを数値に変換
+    const totalSupply = data.totalSupply ? data.totalSupply.toNumber() : config ? config.MAX_SUPPLY : 0;
+    console.log("Total Supply (BigNumber):", totalSupply);
 
   const sectionStyle = {
-    backgroundImage: `url(/logo512.jpg)`,
+    backgroundImage: `url(/config/images/bg.png)`,
     backgroundSize: 'cover',
     backgroundPosition: 'center',
-    backgroundAttachment: 'fixed' /* パララックス効果を適用 */
+    backgroundAttachment: 'fixed'
   };
   
-  const overlayStyle = {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(255, 255, 255, 0.7)', // 白基調の半透明オーバーレイ
-    zIndex: -1 // 背景の後ろに配置
-  };
+  // const overlayStyle = {
+  //   position: 'absolute',
+  //   top: 0,
+  //   left: 0,
+  //   right: 0,
+  //   bottom: 0,
+  //   backgroundColor: 'rgba(255, 255, 255, 0.3)',
+  //   zIndex: -1
+  // };
   
   const contentStyle = {
     position: 'relative',
-    zIndex: 2 // オーバーレイよりも前に配置
+    zIndex: 2
   };
 
   const walletConnectStyle = isConnected ? {} : {
@@ -62,7 +90,7 @@ function App() {
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
-    height: '100%' // 高さを100%に設定
+    height: '100%'
   };
 
   const leftSideStyle = isConnected ? {} : { maxWidth: '400px', margin: 'auto', marginTop: '100px' };
@@ -70,43 +98,13 @@ function App() {
 
 
   const mintframeSideStyle = isConnected ? {} : {
-    backgroundColor: 'rgba(255, 255, 255, 0)', // 半透明の白色
+    backgroundColor: 'rgba(255, 255, 255, 0)',
   };
-
-    // Reduxストアからデータを取得
-    const smartContractData = useSelector((state) => state.data.smartContractData);
-
-
-    // データが更新されたときにコンソールに出力
-    useEffect(() => {
-      if (smartContractData) {
-        console.log('Smart Contract Data:', smartContractData);
-      }
-    }, [smartContractData]);
-
-    useEffect(() => {
-      const handleResize = () => {
-        if (window.innerWidth >= 768 && window.innerWidth <= 1080) {
-          setCreditCardButtonText("クレカ決済");
-        } else {
-          setCreditCardButtonText("クレジットカード　決済");
-        }
-      };
-    
-      // イベントリスナーを設定
-      window.addEventListener("resize", handleResize);
-    
-      // 初期ロード時にもチェック
-      handleResize();
-    
-      // クリーンアップ関数
-      return () => window.removeEventListener("resize", handleResize);
-    }, []);
 
 return (
   <ThirdwebProvider 
       clientId={CLIENT_ID} 
-      activeChain={"polygon"}
+      activeChain={config.CHAIN}
       supportedWallets={[
         metamaskWallet({ recommended: true }),
         coinbaseWallet(),
@@ -115,21 +113,19 @@ return (
         embeddedWallet(),
       ]}
   >
-    <WalletProvider>
-        <ContractDataFetcher contractAddress="0xA982c7045EEeA4705da14611BFaA10e18dea90cE" />
 
     <div className="App"style={{ ...sectionStyle, ...contentStyle }}>
-                  <div style={overlayStyle}></div>
+                  {/* <div style={overlayStyle}></div> */}
 
                   <Header />
 
       <main className="main-content" style={walletConnectStyle}>
        
           <div className="left-side" style={leftSideStyle}>
-              <img src="/logo192.jpg" alt="NFT" className="nft-image" />
+          <img src="/config/images/left.png" alt="NFT" className="nft-image" />
                 <div className='info'>
-                    <h3>Mint Price : 0.03ETH</h3>
-                    <span>{"8"} / 10</span>
+                <h3>Mint Price : {config.DISPLAY_COST} {config.NETWORK.SYMBOL}</h3>
+                <span>{totalSupply} / {config.MAX_SUPPLY}</span>
                 </div>
           </div>
           
@@ -144,34 +140,7 @@ return (
                   {isConnected && (
                     <div className="mint-container">
 
-                      <h3>Mint Amount</h3>
-
-                      <div className="mint-controls">
-
-                          <button className="controls-button" onClick={decrementMintAmount}>-</button>
-                          <span className='mint-amount'>{mintAmount}</span>
-                          <button className="controls-button" onClick={incrementMintAmount}>+</button>
-                      
-                      </div>
-
-                      <div className='web3button-container'>
-                          <Web3Button
-                            contractAddress="0xA982c7045EEeA4705da14611BFaA10e18dea90cE"
-                            action={async (contract) => {
-                              await contract.erc721.claim(mintAmount);
-                            }}
-                            className="custom-web3-button"
-                            onSuccess={handleSuccess}
-                          >
-                            Mint（0.03ETH）
-                          </Web3Button>
-                      </div>
-
-                      <div className='credit-card-container'>
-                          <a href={paymentUrl} target="_blank" rel="noopener noreferrer" className="credit-card-button">
-                          {creditCardButtonText}
-                          </a>
-                      </div>
+                      <Mint />
 
                     </div>
                   )}
@@ -181,7 +150,6 @@ return (
       </main>
         <Footer />
     </div>
-    </WalletProvider>
   </ThirdwebProvider>
   );
 }

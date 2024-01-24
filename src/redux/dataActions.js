@@ -1,10 +1,83 @@
 // dataActions.js
+import store from "./store";
+
+const fetchDataRequest = () => {
+  return {
+    type: "CHECK_DATA_REQUEST",
+  };
+};
+
+const fetchDataSuccess = (payload) => {
+  return {
+    type: "CHECK_DATA_SUCCESS",
+    payload: payload,
+  };
+};
+
+const fetchDataFailed = (payload) => {
+  return {
+    type: "CHECK_DATA_FAILED",
+    payload: payload,
+  };
+};
+
+export const fetchData = (account) => {
+  return async (dispatch) => {
+    console.log("fetchData: データ取得開始");
+
+    dispatch(fetchDataRequest());
+    try {
+      const blockchain = store.getState().blockchain;
+      const smartContract = blockchain.smartContract;
+
+      // BigNumber型の値はそのまま保存
+      const totalSupply = await smartContract.totalSupply();
+      const userMintedAmount = await smartContract.getUserMintedAmount(account);
+      const paused = await smartContract.paused();
+      const onlyAllowlisted = await smartContract.onlyAllowlisted();
+      const maxMintAmountPerTransaction = await smartContract.maxMintAmountPerTransaction();
+      const mintCount = await smartContract.mintCount();
+      const publicSaleMaxMintAmountPerAddress = await smartContract.publicSaleMaxMintAmountPerAddress();
+      const allowlistUserAmount = await smartContract.getAllowlistUserAmount(account);
+      const allowlistType = await smartContract.allowlistType();
+
+      // データをReduxのステートに保存
+      dispatch(fetchDataSuccess({
+        totalSupply,
+        userMintedAmount,
+        paused,
+        onlyAllowlisted,
+        maxMintAmountPerTransaction,
+        mintCount,
+        publicSaleMaxMintAmountPerAddress,
+        allowlistUserAmount,
+        allowlistType,
+      }));
+
+      console.log("fetchData: データ取得成功", {
+        totalSupply,
+        userMintedAmount,
+        paused,
+        onlyAllowlisted,
+        maxMintAmountPerTransaction,
+        mintCount,
+        publicSaleMaxMintAmountPerAddress,
+        allowlistUserAmount,
+        allowlistType,
+      });
+
+    } catch (err) {
+      console.error("fetchData: エラー発生", err);
+      dispatch(fetchDataFailed("Could not load data from contract."));
+    }
+  };
+};
+
+
 // const PROXY_SERVER_URL = 'http://162.43.48.49:3006';
 const PROXY_SERVER_URL = 'https://ninjadao-fanart-contest.xyz';
 
-
 const SET_NFT_DATA = "SET_NFT_DATA";
-const SET_SMART_CONTRACT_DATA = "SET_SMART_CONTRACT_DATA";
 
 const setNFTData = (newData) => (dispatch, getState) => {
   const existingData = getState().data.nftData;
@@ -43,66 +116,6 @@ export const fetchCollectionData = (walletAddress, contractAddress, abi) => asyn
   }
 };
 
-// // スマートコントラクトからコレクションデータを取得するためのアクションクリエイター
-// export const fetchSmartContractData = () => async (dispatch, getState) => {
-//   try {
-//     const { blockchain } = getState();
-//     if (!blockchain.walletData || !blockchain.walletData.smartContracts.length) {
-//       throw new Error("Smart contracts not available");
-//     }
-
-//     const smartContract = blockchain.walletData.smartContracts[0]; // ここでは最初のスマートコントラクトを使用
-//     console.log("Using Smart Contract at Address:", smartContract.options.address);
-//     // スマートコントラクトのメソッドを呼び出して指定されたデータを取得
-//     const cost = await smartContract.methods.cost().call();
-//     const totalSupply = await smartContract.methods.totalSupply().call();
-//     const userMintedAmount = await smartContract.methods.getUserMintedAmount(blockchain.walletData.account).call();
-//     const onlyAllowlisted = await smartContract.methods.onlyAllowlisted().call();
-//     const paused = await smartContract.methods.paused().call();
-//     const maxMintAmountPerTransaction = await smartContract.methods.maxMintAmountPerTransaction().call();
-//     const mintCount = await smartContract.methods.mintCount().call();
-//     const publicSaleMaxMintAmountPerAddress = await smartContract.methods.publicSaleMaxMintAmountPerAddress().call();
-//     const allowlistUserAmount = await smartContract.methods.getAllowlistUserAmount(blockchain.walletData.account).call();
-//     const allowlistType = await smartContract.methods.allowlistType().call();
-
-//     // 取得したデータをReduxストアに保存
-//     dispatch({
-//       type: 'SET_SMART_CONTRACT_DATA',
-//       payload: {
-//         loading: false,
-//         cost,
-//         totalSupply,
-//         userMintedAmount,
-//         onlyAllowlisted,
-//         paused,
-//         maxMintAmountPerTransaction,
-//         mintCount,
-//         publicSaleMaxMintAmountPerAddress,
-//         allowlistUserAmount,
-//         allowlistType,
-//         error: false,
-//         errorMsg: "",
-//       },
-//     });
-//   } catch (error) {
-//     console.error("Error fetching smart contract data:", error);
-//     dispatch({
-//       type: 'SET_SMART_CONTRACT_DATA',
-//       payload: {
-//         loading: false,
-//         error: true,
-//         errorMsg: error.message,
-//       },
-//     });
-//   }
-// };
-
-// アクションクリエイター
-export const setSmartContractData = (data) => ({
-  type: SET_SMART_CONTRACT_DATA,
-  payload: data,
-});
-
 // ベースURIからデータをフェッチするためのアクション
 export const fetchDataFromBaseURI = (baseURI) => async (dispatch) => {
     try {
@@ -115,9 +128,9 @@ export const fetchDataFromBaseURI = (baseURI) => async (dispatch) => {
       });
   
       const data = await response.json();
-      console.log("Fetched NFT data:", data); // データ取得のロギング
+      console.log("Fetched NFT data:", data); 
 
-      dispatch(setNFTData(data));  // 取得したデータをReduxステートに保存
+      dispatch(setNFTData(data));  
   
     } catch (error) {
       console.error("Error fetching data:", error);

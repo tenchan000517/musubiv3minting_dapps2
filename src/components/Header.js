@@ -1,24 +1,39 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import './Header.css';
 
 function Header() {
+  const [config, setConfig] = useState(null);
+
+  useEffect(() => {
+    const fetchConfig = async () => {
+      try {
+        const response = await fetch('/config/Config.json');
+        const configData = await response.json();
+        setConfig(configData.HEADER);
+      } catch (error) {
+        console.error('Config.jsonの読み込みに失敗しました', error);
+      }
+    };
+
+    fetchConfig();
+  }, []);
+
   return (
     <header className="app-header">
       <div className="container">
           
           <div className='logo-container'>
-          <img src="/logo192.png" alt="kurimaro logo" className="logo" />
+          <img src="/config/images/logo.png" alt={config?.LOGO_ALT || 'Logo'} className="logo" />
           </div>
 
           <div className="navi-container">
-            <img src="/navi1.png" alt="Navi 1" className="navi-image"/>
-            <img src="/navi2.png" alt="Navi 2" className="navi-image"/>
-            <img src="/navi3.png" alt="Navi 3" className="navi-image"/>
-            <img src="/navi4.png" alt="Navi 4" className="navi-image"/>
+          {["navi1.png", "navi2.png", "navi3.png", "navi4.png"].map((image, index) => (
+              <img key={index} src={`/${image}`} alt={config?.NAV_ALTS?.[index] || `Navi ${index + 1}`} className="navi-image"/>
+              ))}
           </div>
 
           <div className="header-content">
-          <h1>kurimaro collection</h1>
+            <h1>{config?.TITLE}</h1>
           </div>
 
       </div>

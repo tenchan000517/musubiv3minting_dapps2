@@ -1,18 +1,36 @@
 {
+  "PAYMENT_URL": "https://paypiement.xyz/ja/projects/0e483200-a017-4961-9bce-457f2da1cdc8?recipientAddress=",
   "CONTRACT_ADDRESS": "0x7C62A9Fed3e933dffdd849251971689be9dBC092",
   "SCAN_LINK": "https://goerli.etherscan.io/token/0x7C62A9Fed3e933dffdd849251971689be9dBC092",
+  "useABI": "ERC721",
   "NETWORK": {
     "NAME": "Ethereum",
     "SYMBOL": "ETH",
     "ID": 5
   },
-  "NFT_NAME": "PaoGene",
-  "SYMBOL": "PG",
-  "MAX_SUPPLY": 8080,
-  "WEI_COST": 1000000000000000,
-  "DISPLAY_COST": 0.001,
+  "NFT_NAME": "kurimaro collection",
+  "SYMBOL": "KR",
+  "MAX_SUPPLY": 10,
+  "WEI_COST": 30000000000000000,
+  "DISPLAY_COST": 0.03,
   "GAS_LIMIT": 285000,
   "MARKETPLACE": "Opeansea",
   "MARKETPLACE_LINK": "https://opensea.io/ja/collection/musubicollection",
-  "SHOW_BACKGROUND": true
+  "SINGLE_MINT_MODE": false, 
+  "SHOW_BACKGROUND": true,
+  "CREDIT_CARD_MODE": true,
+  "CREDIT_CARD_LINK": "https://paypiement.xyz/ja/projects/0e483200-a017-4961-9bce-457f2da1cdc8?recipientAddress=",
+  "TERMS_OF_USE_MODE": true,
+  "TERMS_OF_USE_LINK": "https://nft-mint.xyz/paidpost-terms/",
+  "TERMS_OF_USE_DISPLAY": "利用規約・プライバシーポリシー・特定商取引法に基づく表記",
+  
+  "META": {
+    "title": "Kurimaro Collection",
+    "description": "Kurimaro Collection MINT",
+    "url": "https://ikimono.nft-mint.xyz/"
+  },
+  "HEADER": {
+    "LOGO_ALT": "_LOGO_ALT_",
+    "TITLE": "kurimaro collection"
+  }
 }

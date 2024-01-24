@@ -141,7 +141,7 @@
 .controls-button {
 width: 20%; /* 幅を％で指定 */
 height: 40px; /* 高さを％で指定 */
-border-radius: 50%;
+border-radius: 100%;
 border: none;
 background-color: #212071;
 box-shadow: 0px 4px 8px rgba(223, 223, 223, 0.1);
@@ -170,13 +170,14 @@ transition: transform 0.3s ease, box-shadow 0.3s ease;
   align-items: center; /* 垂直方向の中央揃え */
   justify-content: center; /* 水平方向の中央揃え */
   background-color: #9ed984;
-  width: 200px;
-  height: 35px;
+  width: 250px;
+  height: 60px;
   color: white;
   padding: 12px 24px;
   border-radius: 12px;
   text-decoration: none;
   transition: background-color 0.3s;
+  font-size: 1.2em; /* テキストサイズを大きくする */
   font-weight: bold; /* 太字に設定 */
 
 }
@@ -203,6 +204,10 @@ transition: transform 0.3s ease, box-shadow 0.3s ease;
   background-color: #89d66f;
 }
 
+.mint-success-message{
+  color: rgb(2, 2, 81);
+}
+
 @keyframes page-flip {
   0% {
     transform: rotateY(0deg);
@@ -224,7 +229,9 @@ transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
     .credit-card-button {
-      width: 50%;    
+      width: 50%; 
+      font-size: 1em; /* テキストサイズを大きくする */
+   
     }
 
 }
@@ -262,7 +269,7 @@ transition: transform 0.3s ease, box-shadow 0.3s ease;
   }
 
   .credit-card-button {
-    width: 150px;
+    width: 200px;
   }
 
   .controls-button {
