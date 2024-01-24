@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { fetchData } from './redux/dataActions'; // fetchData をインポート
-import { disconnect } from './redux/blockchainActions'; // disconnect アクションをインポート
+import { fetchData } from './redux/dataActions';
+import { disconnect } from './redux/blockchainActions';
 
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -25,7 +25,7 @@ function App() {
 
   const isConnected = !!blockchain.account;
   
-  useMetaData(); // Appコンポーネントでメタデータフックを使用
+  useMetaData();
 
   // コンポーネントがマウントされたときにウォレット接続を試みる
   useEffect(() => {
@@ -34,7 +34,7 @@ function App() {
     if (blockchain.account) {
       dispatch(fetchData(blockchain.account));
     } else {
-      dispatch(disconnect()); // アカウントが null になった場合、disconnect アクションをディスパッチ
+      dispatch(disconnect());
     }
   }, [blockchain.account, dispatch]); 
 
@@ -43,8 +43,8 @@ function App() {
       try {
         const response = await fetch('/config/Config.json');
         const configData = await response.json();
-        setConfig(configData); // Configデータをローカル状態に設定
-        console.log("Configデータ:", configData); // ログ出力を追加
+        setConfig(configData);
+        console.log("Configデータ:", configData);
 
       } catch (error) {
         console.error('Config.jsonの読み込みに失敗しました', error);
@@ -70,6 +70,7 @@ function App() {
     backgroundAttachment: 'fixed'
   };
   
+  // プレーンの背景の場合
   // const overlayStyle = {
   //   position: 'absolute',
   //   top: 0,

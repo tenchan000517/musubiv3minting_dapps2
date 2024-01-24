@@ -1,12 +1,12 @@
 {
-  "PAYMENT_URL": "https://paypiement.xyz/ja/projects/0e483200-a017-4961-9bce-457f2da1cdc8?recipientAddress=",
-  "CONTRACT_ADDRESS": "0x7C62A9Fed3e933dffdd849251971689be9dBC092",
-  "SCAN_LINK": "https://goerli.etherscan.io/token/0x7C62A9Fed3e933dffdd849251971689be9dBC092",
+  "PAYMENT_URL": "https://paypiement.xyz/ja/projects/0e483200-a017-4961-9bce-457f2da1cdc8?recipient",
+  "CONTRACT_ADDRESS": "0x2367d9b9F26639B157d00c054d6E3fB9af330cBc",
+  "SCAN_LINK": "https://etherscan.io/token/0x2367d9b9F26639B157d00c054d6E3fB9af330cBc",
   "useABI": "ERC721",
   "NETWORK": {
     "NAME": "Ethereum",
     "SYMBOL": "ETH",
-    "ID": 5
+    "ID": 1
   },
   "NFT_NAME": "kurimaro collection",
   "SYMBOL": "KR",
@@ -19,7 +19,7 @@
   "SINGLE_MINT_MODE": false, 
   "SHOW_BACKGROUND": true,
   "CREDIT_CARD_MODE": true,
-  "CREDIT_CARD_LINK": "https://paypiement.xyz/ja/projects/0e483200-a017-4961-9bce-457f2da1cdc8?recipientAddress=",
+  "CREDIT_CARD_LINK": "https://paypiement.xyz/ja/projects/0e483200-a017-4961-9bce-457f2da1cdc8?recipient",
   "TERMS_OF_USE_MODE": true,
   "TERMS_OF_USE_LINK": "https://nft-mint.xyz/paidpost-terms/",
   "TERMS_OF_USE_DISPLAY": "利用規約・プライバシーポリシー・特定商取引法に基づく表記",

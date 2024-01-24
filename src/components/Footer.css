@@ -1,0 +1,27 @@
+/* フッターの基本スタイル */
+.app-footer {
+    padding: 20px;
+    text-align: center;
+    background-color: rgba(255, 255, 255, 0.3);
+    color: #333;
+    font-size: 14px;
+    border-top: 1px solid #ddd;
+  }
+  
+  .app-footer a {
+    color: #333;
+    text-decoration: none;
+  }
+  
+  .app-footer a:hover {
+    text-decoration: underline;
+  }
+  
+  /* モバイルビューの場合のスタイル */
+  @media (max-width: 768px) {
+    .app-footer {
+      padding-left: 15px;
+      padding-right: 15px;
+    }
+  }
+  

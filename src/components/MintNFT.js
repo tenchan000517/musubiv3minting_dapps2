@@ -20,6 +20,7 @@ function Mint() {
   const [mintSuccess, setMintSuccess] = useState(false); // ミント成功状態の追加
   const [allowlistUserAmountData, setAllowlistUserAmountData] = useState(0);
   const [currentNetworkId, setCurrentNetworkId] = useState(null);
+  const [creditCardButtonText, setCreditCardButtonText] = useState("クレジットカードで決済");
 
   const nameMapRef = useRef([]);
   const addressIdRef = useRef(-1);
@@ -256,7 +257,8 @@ function Mint() {
             console.error('Failed to switch network', switchError);
           }
         };
-  
+
+
   return (
         <>
         {blockchain.account === "" || blockchain.smartContract === null ? (
@@ -267,7 +269,14 @@ function Mint() {
           </div>
         ) : (
         <div>
+
+            <div className="mint-feedback-container">
+
             <p>{feedback}</p>
+
+            </div>
+
+
           <div className="mint-container">
 
             <h3>Mint Amount</h3>
@@ -314,7 +323,7 @@ function Mint() {
               hidden={!CONFIG.CREDIT_CARD_MODE}
               disabled={claimingNft || isMintButtonDisabled(data, allowlistUserAmountData)}
               onClick={() => {
-                window.location.href = CONFIG.CREDIT_CARD_LINK + "?quantity=" + mintAmount + "&recipientAddress=" + blockchain.account;
+                window.location.href = CONFIG.CREDIT_CARD_LINK + "Address=" + blockchain.account + "&quantity=" + mintAmount;
               }}
               className="credit-card-button"
             >
@@ -396,7 +405,18 @@ function isMintButtonDisabled(data, allowlistUserAmountData, claimingNft) {
       return mintButtonText;
     }
   
-    // 「MINT (ETH)」のテキストは「MINT (クレジットカード)」に置き換え
+    // スマートフォン表示の閾値（ここでは768pxとします）
+    const mobileViewThreshold = 768;
+    
+    // 現在のビューポートの幅を取得
+    const viewportWidth = window.innerWidth;
+
+    // スマートフォン表示の場合、改行を含むテキストを返す
+    if (viewportWidth <= mobileViewThreshold) {
+      return "MINT\n（クレジットカード）";
+    }
+
+    // デスクトップ表示の場合、通常のテキストを返す
     return "MINT (クレジットカード)";
   }
   

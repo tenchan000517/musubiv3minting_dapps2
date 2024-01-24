@@ -2,10 +2,10 @@ import shutil
 
 #https://eth-converter.com/
 
-contractAddress = "0x7C62A9Fed3e933dffdd849251971689be9dBC092"
+contractAddress = "0x2367d9b9F26639B157d00c054d6E3fB9af330cBc"
 
-#chainSelect = "Ethereum"
-chainSelect = "Goerli"
+chainSelect = "Ethereum"
+# chainSelect = "Goerli"
 #chainSelect = "Polygon"
 
 NFTName = "kurimaro collection"
@@ -16,7 +16,7 @@ displayCost = "0.03"
 marketplaceLink = "https://opensea.io/ja/collection/musubicollection"
 singleMintMode = "false"
 creditCardMode = "true"
-paymentUrl = "https://paypiement.xyz/ja/projects/0e483200-a017-4961-9bce-457f2da1cdc8?recipientAddress="
+paymentUrl = "https://paypiement.xyz/ja/projects/0e483200-a017-4961-9bce-457f2da1cdc8?recipient"
 termsOfUseMode = "true"
 termsOfUseLink = "https://nft-mint.xyz/paidpost-terms/"
 termsOfUseDisplay = "利用規約・プライバシーポリシー・特定商取引法に基づく表記"

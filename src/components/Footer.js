@@ -1,8 +1,9 @@
 import React from 'react';
+import './Footer.css';
 
 function Footer() {
   return (
-    <footer>
+    <footer class="app-footer">
       <a href="https://nft-mint.xyz/paidpost-terms/" target="_blank" rel="noopener noreferrer">
         利用規約・プライバシーポリシー・特定取引商法について表記
       </a>
