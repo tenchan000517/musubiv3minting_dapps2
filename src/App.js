@@ -6,7 +6,7 @@ import { disconnect } from './redux/blockchainActions';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import WalletConnect from './components/WalletConnect';
-import useMetaData from './Hook/useMetaData';
+// import useMetaData from './Hook/useMetaData';
 import Mint from './components/MintNFT';
 import { metamaskWallet, coinbaseWallet, walletConnect, localWallet, embeddedWallet } from "@thirdweb-dev/react";
 import { ThirdwebProvider } from "@thirdweb-dev/react";
@@ -25,7 +25,7 @@ function App() {
 
   const isConnected = !!blockchain.account;
   
-  useMetaData();
+  // useMetaData();
 
   // コンポーネントがマウントされたときにウォレット接続を試みる
   useEffect(() => {

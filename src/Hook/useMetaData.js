@@ -2,17 +2,25 @@
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 
-const useMetaData = (title, description, image, url) => {
-  const [metaConfig, setMetaConfig] = useState({
-    title: "",
-    description: "",
-    image: "/left.png",
-    url: ""
-  });
+// const useMetaData = (title, description, image, url) => {
+//   const [metaConfig, setMetaConfig] = useState({
+//     title: "",
+//     description: "",
+//     image: "/left.png",
+//     url: ""
+//   });
+
+  const useMetaData = (title, description, image, url) => {
+    const [metaConfig, setMetaConfig] = useState({
+      title: "Default Title",
+      description: "Default Description",
+      image: "/default-image.png",
+      url: "https://default-url.com"
+    });
 
   useEffect(() => {
     const fetchConfig = async () => {
-      const configResponse = await fetch("/config/config.json");
+      const configResponse = await fetch("/config/Config.json");
       const config = await configResponse.json();
       setMetaConfig(config.META);
     };

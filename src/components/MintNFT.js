@@ -20,7 +20,6 @@ function Mint() {
   const [mintSuccess, setMintSuccess] = useState(false); // ミント成功状態の追加
   const [allowlistUserAmountData, setAllowlistUserAmountData] = useState(0);
   const [currentNetworkId, setCurrentNetworkId] = useState(null);
-  const [creditCardButtonText, setCreditCardButtonText] = useState("クレジットカードで決済");
 
   const nameMapRef = useRef([]);
   const addressIdRef = useRef(-1);

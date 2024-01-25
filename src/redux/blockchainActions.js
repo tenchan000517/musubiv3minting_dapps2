@@ -63,7 +63,7 @@ export const connect = (walletData) => async (dispatch) => {
   try {
 
         // Configファイルを非同期で読み込む
-        const configResponse = await fetch("/config/config.json");
+        const configResponse = await fetch("/config/Config.json");
         const config = await configResponse.json();
     
         // ABIファイルのパスを構築

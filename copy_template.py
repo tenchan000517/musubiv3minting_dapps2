@@ -29,7 +29,6 @@ headerTitle = "kurimaro collection"
 
 ###############################################
 
-
 if chainSelect == "Ethereum" :
     chainNumber = "1"
     chainName = "Ethereum"
@@ -66,6 +65,8 @@ shutil.copy2("1x/navi4.png", "public/navi4.png")
 
 #abi copy
 shutil.copy2("copy_template/abi.json" , "public/config/abi.json")
+shutil.copy2("copy_template/ERC721abi.json" , "public/config/ERC721abi.json")
+shutil.copy2("copy_template/ERC1155abi.json" , "public/config/ERC1155abi.json")
 
 
 #config.json
