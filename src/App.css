@@ -188,23 +188,23 @@ transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .custom-web3-button {
-  background-color: #85acd7;
-  width: 250px;
-  height: 60px;
-  color: white;
-  padding: 12px 24px;
-  border-radius: 12px;
-  text-decoration: none;
-  transition: background-color 0.3s;
-  font-size: 1.2em; /* テキストサイズを大きくする */
-  font-weight: bold; /* 太字に設定 */
+  background-color: #85acd7 !important;
+  width: 250px !important;
+  height: 60px !important;
+  color: white !important;
+  padding: 12px 24px !important;
+  border-radius: 12px !important;
+  text-decoration: none !important;
+  transition: background-color 0.3s !important;
+  font-size: 1.2em !important; /* テキストサイズを大きくする */
+  font-weight: bold !important; /* 太字に設定 */
 
 }
 
 .custom-web3-button:hover {
-  background-color: #5cb5d5;
-  transform: scale(1.1); /* 少し大きくする */
-  transition: transform 0.3s ease, background-color 0.8s ease; /* スムーズな遷移を追加 */
+  background-color: #5cb5d5 !important;
+  transform: scale(1.1) !important; /* 少し大きくする */
+  transition: transform 0.3s ease, background-color 0.8s ease !important; /* スムーズな遷移を追加 */
 
 }
 
