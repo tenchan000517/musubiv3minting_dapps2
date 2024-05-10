@@ -40,6 +40,8 @@ export const fetchMintData = (account) => {
       let publicSaleMaxMintAmountPerAddress = await mintContract.publicSaleMaxMintAmountPerAddress();
       let allowlistUserAmount = await mintContract.getAllowlistUserAmount(account);
       let allowlistType = await mintContract.allowlistType();
+      let newMintCount = Number(userMintedAmount) - (blockchain.prevMintCount || 0);
+      blockchain.prevMintCount = Number(userMintedAmount);
 
        console.log("fetchMintData: Mint.js データ", {
          totalSupply,
@@ -51,6 +53,8 @@ export const fetchMintData = (account) => {
          publicSaleMaxMintAmountPerAddress,
          allowlistUserAmount,
          allowlistType,
+         newMintCount: newMintCount
+
        });
 
       dispatch(fetchDataSuccess({
@@ -64,6 +68,8 @@ export const fetchMintData = (account) => {
           publicSaleMaxMintAmountPerAddress,
           allowlistUserAmount,
           allowlistType,
+          newMintCount: newMintCount
+
         }
       }));
 
@@ -88,7 +94,7 @@ export const fetchBurninData = (account) => {
 
 //      const currentPhase = (await burninContract.burninPhase()).toNumber(); // バーニングフェーズを取得
 
-      let totalBurnin, userBurnedAmount, paused, onlyAllowlisted, maxBurnAmountPerTransaction, burnCount, publicSaleMaxBurnAmountPerAddress, allowlistUserAmount, allowlistType, tokensOfOwner, burnedTokenIds;
+let totalBurnin, userBurnedAmount, paused, onlyAllowlisted, tokensOfOwner, burnedTokenIds;
 
 //      let totalBurnin = await burninContract.totalBurnin();  // 総バーン数
 //      let userBurnedAmount = await burninContract.userBurnedAmountByPhase(currentPhase, account);
@@ -176,7 +182,6 @@ export const updateBurnedTokenIds = (burnedTokenIds) => {
   };
 };
 
-
 // const PROXY_SERVER_URL = 'http://162.43.48.49:3006';
 const PROXY_SERVER_URL = 'https://ninjadao-fanart-contest.xyz';
 
@@ -258,6 +263,6 @@ export const fetchUserBurnedAmount = (account) => async (dispatch) => {
     const userBurnedAmount = await burninContract.userBurnedAmount(account);
     dispatch({ type: 'SET_USER_BURNED_AMOUNT', payload: userBurnedAmount });
   } catch (err) {
-    // console.error("Error fetching user burned amount", err);
+    console.error("Error fetching user burned amount", err);
   }
 };

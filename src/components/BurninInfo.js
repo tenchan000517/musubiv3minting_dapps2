@@ -10,16 +10,24 @@ function BurninInfo() {
   // BigNumber を適切に扱う関数
   const formatBigNumber = (bigNumber) => {
     if (BigNumber.isBigNumber(bigNumber)) {
-      return bigNumber.toString(); // BigNumber が正しくあれば文字列に変換
+      return bigNumber.toNumber(); // BigNumber が正しくあれば数値に変換
     }
-    return '0'; // BigNumber でない場合は '0' を返す
+    return 0; // BigNumber でない場合は 0 を返す
+  };
+
+  // 表示用の値を取得する関数
+  const getDisplayValue = (value) => {
+    if (typeof value === 'string') {
+      return parseInt(value, 10) || 0; // 文字列の場合は整数に変換し、変換できない場合は 0 を返す
+    }
+    return formatBigNumber(value); // BigNumber の場合は formatBigNumber 関数を使って数値に変換
   };
 
   return (
     <div className="burnin-info-container">
       <div className="mint-burnin-info">
-        <p>新規発行: {formatBigNumber(newMintCount)}</p>
-        <p>バー忍: {(burninCount)}</p>
+        <p>新規発行: {getDisplayValue(newMintCount)}</p>
+        <p>バー忍: {getDisplayValue(burninCount)}</p>
       </div>
     </div>
   );

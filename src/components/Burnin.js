@@ -225,6 +225,8 @@ function Burnin() {
         }
       );
 
+      setFeedback(`トランザクションを取得しました。承認されるまでしばらくお待ちください。`);
+
       await transaction.wait();
 
       setFeedback(`🎉${CONFIG.NFT_NAME}がバー忍できました!🎉 Opensea.io で確認してみましょう。`);
@@ -294,8 +296,11 @@ function Burnin() {
 useEffect(() => {
   let feedbackText = `ボタンを押してNFTをバー忍してください。`;
 
-  if (data.burninData.loading) {
+  if (currentNetworkId !== CONFIG.NETWORK.ID) {
+    feedbackText = "ネットワークをEthereumチェーンに変えてください";
+  } else if (data.burninData.loading) {
     feedbackText = "読み込み中です。しばらくお待ちください。";
+
   } else if (data.burninData.paused) {
     if (CONFIG.onlyAllowlisted) {
       if (allowlistUserAmountData === 0) {
@@ -325,7 +330,7 @@ useEffect(() => {
   }
 
   setFeedback(feedbackText);
-}, [CONFIG.onlyAllowlisted, data.burninData, allowlistUserAmountData, claimingNft, filteredTokenIds.length, burninCount]);
+}, [CONFIG.onlyAllowlisted, data.burninData, allowlistUserAmountData, claimingNft, filteredTokenIds.length, burninCount, currentNetworkId, CONFIG.NETWORK.ID]);
   
   useEffect(() => {
     if (burninCount >= 1) {
@@ -334,6 +339,8 @@ useEffect(() => {
       setShowReopenButton(false);
     }
   }, [burninCount]);
+
+  console.log(burninCount)
 
   useEffect(() => {
     console.log('showPopup:', showPopup);
@@ -425,13 +432,12 @@ return (
             </button>
           )}
         </div>
-        {burninCount >= 1 && (
-          <div className="button-container">
+
+        <div className="button-container">
             <button className="button" onClick={() => setShowPopup(true)}>
-              ポップアップを表示
+              ミント・バー忍状況
             </button>
           </div>
-        )}
 
         {showPopup && (
           <div className="popup">

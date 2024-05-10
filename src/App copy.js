@@ -81,10 +81,9 @@ function App() {
   }
 
   const totalSupply = mintData.totalSupply ? mintData.totalSupply.toNumber() : config ? config.MAX_SUPPLY : 0;
-  const newTotalSupply = Math.max(totalSupply - 2322, 0);
+  const newTotalSupply = totalSupply - 2322;
 
   const totalBurnin = burninData.totalBurnin ? burninData.totalBurnin.toNumber() : config.BURNIN ? config.BURNIN.MAX_SUPPLY : 0;
-  
   const sectionStyle = {
     backgroundImage: `url(/config/images/musubiv3_bg.png)`,
     backgroundSize: 'contain',
@@ -95,15 +94,8 @@ function App() {
     display: 'flex',
     flexDirection: 'column',
   };
+  
 
-  const backgroundStyle = {
-    backgroundImage: `url(/config/images/musubiv3_bg.png)`,
-    backgroundSize: '100% auto',
-    backgroundPosition: 'center top',
-    backgroundAttachment: 'fixed',
-    backgroundRepeat: 'repeat-y',
-    minHeight: '100vh',
-  };
 
   const contentStyle = {
     position: 'relative',
@@ -163,7 +155,7 @@ function App() {
         embeddedWallet(),
       ]}
     >
-      <div className="App" style={backgroundStyle}>
+      <div className="App" style={{ ...sectionStyle, ...contentStyle }}>
         <Header />
 
         <main className="main-content" style={walletConnectStyle}>

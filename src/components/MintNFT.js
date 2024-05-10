@@ -253,8 +253,11 @@ function Mint() {
   useEffect(() => {
     let feedbackText = `MINTボタンを押してNFTをミントしてください。`;
   
-    if (data.mintData.loading) {
+    if (currentNetworkId !== CONFIG.NETWORK.ID) {
+      feedbackText = "ネットワークをEthereumチェーンに変えてください";
+    } else if (data.mintData.loading) {
       feedbackText = "読み込み中です。しばらくお待ちください。";
+
     } else if (data.mintData.paused) {
       if (CONFIG.onlyAllowlisted) {
         if (allowlistUserAmountData === 0) {
@@ -286,7 +289,7 @@ function Mint() {
     }
   
     setFeedback(feedbackText);
-  }, [CONFIG.onlyAllowlisted, data.mintData, allowlistUserAmountData, newMintCount]);
+  }, [CONFIG.onlyAllowlisted, data.mintData, allowlistUserAmountData, newMintCount, currentNetworkId, CONFIG.NETWORK.ID]);
   
 
   useEffect(() => {
@@ -365,15 +368,11 @@ function Mint() {
             </div>
           )}
 
-          {newMintCount >= 1 && (
-            <div class="button-container">
-
+          <div className="button-container">
             <button className="button" onClick={() => setShowPopup(true)}>
-              ポップアップを表示
+              ミント・バー忍状況
             </button>
-            </div>
-
-          )}
+          </div>
 
           {showPopup && (
                       <div className="popup">

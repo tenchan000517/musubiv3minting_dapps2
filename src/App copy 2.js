@@ -81,10 +81,7 @@ function App() {
   }
 
   const totalSupply = mintData.totalSupply ? mintData.totalSupply.toNumber() : config ? config.MAX_SUPPLY : 0;
-  const newTotalSupply = Math.max(totalSupply - 2322, 0);
 
-  const totalBurnin = burninData.totalBurnin ? burninData.totalBurnin.toNumber() : config.BURNIN ? config.BURNIN.MAX_SUPPLY : 0;
-  
   const sectionStyle = {
     backgroundImage: `url(/config/images/musubiv3_bg.png)`,
     backgroundSize: 'contain',
@@ -95,15 +92,8 @@ function App() {
     display: 'flex',
     flexDirection: 'column',
   };
+  
 
-  const backgroundStyle = {
-    backgroundImage: `url(/config/images/musubiv3_bg.png)`,
-    backgroundSize: '100% auto',
-    backgroundPosition: 'center top',
-    backgroundAttachment: 'fixed',
-    backgroundRepeat: 'repeat-y',
-    minHeight: '100vh',
-  };
 
   const contentStyle = {
     position: 'relative',
@@ -163,30 +153,22 @@ function App() {
         embeddedWallet(),
       ]}
     >
-      <div className="App" style={backgroundStyle}>
+      <div className="App" style={{ ...sectionStyle, ...contentStyle }}>
         <Header />
 
         <main className="main-content" style={walletConnectStyle}>
         <div className="left-side">
             <div className="inner-frame" style={{ backgroundColor: 'rgba(255, 255, 255, 0)', border: 'none' }}>
               <img src="/config/images/left.png" alt="NFT" className="nft-image" />
+              <div className='info'>
+                <h3>Mint Price : {config.DISPLAY_COST} {config.NETWORK.SYMBOL}</h3>
+                <span>{totalSupply} / {config.MAX_SUPPLY}</span>
+              </div>
             </div>
           </div>
 
           <div className="right-side">
             <div className='mint-frame'>
-
-            <div className="welcome-container">
-            <div className="welcome-message">
-              <h2>MusubiV3 ミントサイトへようこそ！</h2>
-              <p>ステップ①: 新規発行orバー忍（または両方を）をしてください</p>
-              <p>ステップ②: 特典の受け取り手続きをしてください</p>
-              <p><small>※画面下部で手続きができます</small></p>
-              <p><small>※特典の受け取り手続きは必ず行ってください</small></p>
-              <p><small>お問い合わせ等ありましたらNinjaDAO内 🍙/musubi-collectionでシャックにメンションでお知らせください</small></p>
-            </div>
-          </div>
-
               <div className='wallet-connect'>
                 <WalletConnect />
               </div>
@@ -194,13 +176,6 @@ function App() {
               {isConnected && (
                 <>
                   <div className="mint-container">
-
-                  <div className='info'>
-                <h3>Mint Price : {config.DISPLAY_COST} {config.NETWORK.SYMBOL}</h3>
-                <span>{newTotalSupply} / {config.MAX_SUPPLY}</span>
-              </div>
-                  <h2 className="section-title">新規発行</h2>
-
                     <div className="mint-image-container">
                     <img src="/config/images/MusubiV3_generative.gif" alt="NFT" />
                     </div>
@@ -208,11 +183,6 @@ function App() {
                     <Mint />
                   </div>
                   <div className="burnin-container">
-                  <div className='info'>
-                  <h3>Burnin Price : {config.BURNIN.DISPLAY_COST} {config.BURNIN.NETWORK.SYMBOL}</h3>
-                  <span>{totalBurnin} / {config.BURNIN.MAX_SUPPLY}</span>
-                </div>
-                <h2 className="section-title">バー忍</h2>
                    <Burnin />
                   </div>
                   <div className="burnin-form-container">
