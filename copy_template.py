@@ -2,17 +2,17 @@ import shutil
 
 #https://eth-converter.com/
 
-contractAddress = "0x2367d9b9F26639B157d00c054d6E3fB9af330cBc"
+contractAddress = "0xf083F9bc026DaFC7E5AFeab5CB576f9464c5553A"
 
-chainSelect = "Ethereum"
+# chainSelect = "Ethereum"
 # chainSelect = "Goerli"
-#chainSelect = "Polygon"
+chainSelect = "Polygon"
 
-NFTName = "kurimaro collection"
-symbol = "KR"
-maxSupply = "10"
-weiCost = "30000000000000000"
-displayCost = "0.03"
+NFTName = "TEST404"
+symbol = "TEST404"
+maxSupply = "2322"
+weiCost = "0"
+displayCost = "0"
 marketplaceLink = "https://opensea.io/ja/collection/musubicollection"
 singleMintMode = "false"
 creditCardMode = "true"

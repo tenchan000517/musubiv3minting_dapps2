@@ -3,7 +3,9 @@ import { ethers } from 'ethers';
 import { MerkleTree} from 'merkletreejs';
 import keccak256 from 'keccak256';
 
-import { allowlistAddresses }  from "./src/allowlist.js";
+// import { allowlistAddresses }  from "./src/allowlist.js";
+import { allowlistAddresses } from './src/allowlist.js';
+
 
 const leafNodes = allowlistAddresses.map(addr => ethers.utils.solidityKeccak256(['address', 'uint256'], [addr[0] , addr[1]]));
 const merkleTree = new MerkleTree(leafNodes, keccak256, { sortPairs: true});

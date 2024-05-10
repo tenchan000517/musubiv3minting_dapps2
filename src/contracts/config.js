@@ -4,7 +4,7 @@ import ERC721ABI from './ERC721abi';
 
 const Config = {
     PAYMENT_URL: "https://paypiement.xyz/ja/projects/0e483200-a017-4961-9bce-457f2da1cdc8?recipientAddress=",
-    CONTRACT_ADDRESS: "0x2367d9b9F26639B157d00c054d6E3fB9af330cBc",
+    CONTRACT_ADDRESS: "0x33E776621c5442DF984AF8E098aEAEF9757f1347",
     SCAN_LINK: "https://goerli.etherscan.io/token/0x7C62A9Fed3e933dffdd849251971689be9dBC092",
     NETWORK: {
         NAME: "goerli",

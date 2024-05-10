@@ -1,3 +1,4 @@
+// Header.js
 import React, { useState, useEffect } from 'react';
 import './Header.css';
 
@@ -21,21 +22,12 @@ function Header() {
   return (
     <header className="app-header">
       <div className="container">
-          
-          <div className='logo-container'>
-          <img src="/config/images/logo.png" alt={config?.LOGO_ALT || 'Logo'} className="logo" />
-          </div>
-
-          <div className="navi-container">
-          {["navi1.png", "navi2.png", "navi3.png", "navi4.png"].map((image, index) => (
-              <img key={index} src={`/${image}`} alt={config?.NAV_ALTS?.[index] || `Navi ${index + 1}`} className="navi-image"/>
-              ))}
-          </div>
-
-          <div className="header-content">
-            <h1>{config?.TITLE}</h1>
-          </div>
-
+        <div className='logo-container'>
+          <img src="/config/images/musubiv3_header_character.png" alt="Header Character" className="header-character" />
+        </div>
+        <div className="header-right">
+          <img src="/config/images/musubiv3_header_right.png" alt="Header Right Logo" className="header-right-logo" />
+        </div>
       </div>
     </header>
   );

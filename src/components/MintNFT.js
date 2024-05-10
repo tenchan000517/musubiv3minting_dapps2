@@ -1,14 +1,14 @@
 // MintNFT.js
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { connect } from '../redux/blockchainActions'; // connect を blockchainActions からインポート
-import { fetchData } from '../redux/dataActions'; // fetchData を dataActions からインポート
-import { allowlistAddresses }  from "../allowlist";
+import { connect } from '../redux/blockchainActions';
+import { fetchMintData } from '../redux/dataActions';
+import { allowlistAddresses } from "../allowlist";
+import "./MintNFT.css";
 
 const { MerkleTree } = require('merkletreejs');
-const { ethers } = require('ethers')
+const { ethers } = require('ethers');
 const keccak256 = require('keccak256');
-
 
 function Mint() {
   const dispatch = useDispatch();
@@ -17,16 +17,16 @@ function Mint() {
   const [claimingNft, setClaimingNft] = useState(false);
   const [feedback, setFeedback] = useState(`MINTボタンを押してNFTをミントしてください。`);
   const [mintAmount, setMintAmount] = useState(1);
-  const [mintSuccess, setMintSuccess] = useState(false); // ミント成功状態の追加
+  const [mintSuccess, setMintSuccess] = useState(false);
   const [allowlistUserAmountData, setAllowlistUserAmountData] = useState(0);
   const [currentNetworkId, setCurrentNetworkId] = useState(null);
+  const [showPopup, setShowPopup] = useState(false);
+  const newMintCount = useSelector((state) => state.data.newMintCount);
+  const burninCount = useSelector((state) => state.data.userBurnedAmount);
+  const [showReopenButton, setShowReopenButton] = useState(false);
 
   const nameMapRef = useRef([]);
   const addressIdRef = useRef(-1);
-
-  useEffect(() => {
-    console.log("MintNFT: blockchain state", blockchain);
-  }, [blockchain]);
 
   const [CONFIG, SET_CONFIG] = useState({
     CONTRACT_ADDRESS: "",
@@ -47,376 +47,403 @@ function Mint() {
     SHOW_BACKGROUND: false,
     SINGLE_MINT_MODE: false,
   });
-  let nameMap;
-  let leafNodes;
-  let merkleTree;
-  let addressId = -1;
-  let claimingAddress;
-  let hexProof;
 
-  const connectFunc = () => {
-    console.log("MintNFT: Connect button clicked");
+  const connectFunc = useCallback(() => {
     dispatch(connect());
-  };
+  }, [dispatch]);
 
-  // ロギングの追加
   useEffect(() => {
-    console.log("MintNFT: blockchain state", blockchain);
-    console.log("MintNFT: data state", data);
-  }, [blockchain, data]);
+    const fetchConfig = async () => {
+      try {
+        const response = await fetch('/config/Config.json');
+        const configData = await response.json();
+        SET_CONFIG(configData);
+      } catch (error) {
+        console.error('Config.jsonの読み込みに失敗しました', error);
+      }
+    };
 
+    fetchConfig();
+  }, []);
 
+  useEffect(() => {
+    if (window.ethereum) {
+      window.ethereum.request({ method: 'eth_chainId' })
+        .then(chainId => setCurrentNetworkId(parseInt(chainId, 16)))
+        .catch(err => console.error('Failed to get network ID', err));
+    }
+  }, []);
 
-  // claimNFTs 関数を追加
-  const claimNFTs = async () => {  // asyncキーワードを追加
+  const decrementMintAmount = useCallback(() => {
+    setMintAmount(prevAmount => Math.max(prevAmount - 1, 1));
+  }, []);
+
+  const decrementMintAmount10 = useCallback(() => {
+    setMintAmount(prevAmount => Math.max(prevAmount - 10, 1));
+  }, []);
+
+  const incrementMintAmount = useCallback(() => {
+    setMintAmount(prevAmount => prevAmount + 1);
+  }, []);
+
+  const incrementMintAmount10 = useCallback(() => {
+    setMintAmount(prevAmount => prevAmount + 10);
+  }, []);
+
+  const getMerkleData = useCallback(() => {
+    if (blockchain.account !== "" && blockchain.mintContract !== null) {
+      nameMapRef.current = allowlistAddresses.map(list => list[0]);
+      addressIdRef.current = nameMapRef.current.indexOf(blockchain.account);
+      if (Number(data.mintData.allowlistType) === 0) {
+        if (addressIdRef.current === -1) {
+          setAllowlistUserAmountData(0);
+        } else {
+          setAllowlistUserAmountData(allowlistAddresses[addressIdRef.current][1]);
+        }
+      } else if (Number(data.mintData.allowlistType) === 1) {
+        setAllowlistUserAmountData(Number(data.mintData.allowlistUserAmount));
+      }
+      console.log("Mint.js: allowlistUserAmountData", allowlistUserAmountData);
+    }
+  }, [blockchain.account, blockchain.mintContract, data.mintData.allowlistType, data.mintData.allowlistUserAmount, allowlistUserAmountData]);
+  
+  const getData = useCallback(() => {
+    if (blockchain.account !== "" && blockchain.mintContract !== null) {
+      dispatch(fetchMintData(blockchain.account));
+    }
+  }, [blockchain.account, blockchain.mintContract, dispatch]);
+  
+  useEffect(() => {
+    getData();
+  }, [getData]);
+
+  useEffect(() => {
+    getMerkleData();
+  }, [getMerkleData]);
+
+  const switchNetwork = useCallback(async () => {
+    try {
+      await window.ethereum.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: `0x${CONFIG.NETWORK.ID.toString(16)}` }],
+      });
+    } catch (switchError) {
+      console.error('Failed to switch network', switchError);
+    }
+  }, [CONFIG.NETWORK.ID]);
+    
+  const handleSuccess = useCallback((tx) => {
+    setMintSuccess(true);
+    setShowPopup(true);
+  }, []);
+
+  const claimNFTs = useCallback(async () => {
     let cost = CONFIG.WEI_COST;
     let gasLimit = CONFIG.GAS_LIMIT;
     let totalCostWei = String(cost * mintAmount);
     let totalGasLimit = String(gasLimit * mintAmount);
     let allowlistMaxMintAmount;
     let burnId = 0;
-
-    console.log(CONFIG.CONTRACT_ADDRESS)
-    console.log(CONFIG.WEI_COST)
   
-    // アローリストのアドレスとマッピング
-    nameMap = allowlistAddresses.map( list => list[0] );
-    leafNodes = allowlistAddresses.map(addr => ethers.utils.solidityKeccak256(['address', 'uint256'], [addr[0] , addr[1]]));
-    merkleTree = new MerkleTree(leafNodes, keccak256, { sortPairs: true});
-    addressId = nameMap.indexOf(blockchain.account);
-
-    if( addressId == -1){
-      //data.whitelistUserAmount = 0;
+    const nameMap = allowlistAddresses.map(list => list[0]);
+    const leafNodes = allowlistAddresses.map(addr => ethers.utils.solidityKeccak256(['address', 'uint256'], [addr[0], addr[1]]));
+    const merkleTree = new MerkleTree(leafNodes, keccak256, { sortPairs: true });
+    const addressId = nameMap.indexOf(blockchain.account);
+  
+    let claimingAddress, hexProof;
+    if (addressId === -1) {
       allowlistMaxMintAmount = 0;
-      claimingAddress = ethers.utils.solidityKeccak256(['address', 'uint256'], [allowlistAddresses[0][0] , allowlistAddresses[0][1]]);
-      hexProof = merkleTree.getHexProof(claimingAddress);    
-    }else{
-      //data.whitelistUserAmount = allowlistAddresses[addressId][1];
+      claimingAddress = ethers.utils.solidityKeccak256(['address', 'uint256'], [allowlistAddresses[0][0], allowlistAddresses[0][1]]);
+      hexProof = merkleTree.getHexProof(claimingAddress);
+    } else {
       allowlistMaxMintAmount = allowlistAddresses[addressId][1];
-      claimingAddress = ethers.utils.solidityKeccak256(['address', 'uint256'], [allowlistAddresses[addressId][0] , allowlistAddresses[addressId][1]]);
-      hexProof = merkleTree.getHexProof(claimingAddress);    
+      claimingAddress = ethers.utils.solidityKeccak256(['address', 'uint256'], [allowlistAddresses[addressId][0], allowlistAddresses[addressId][1]]);
+      hexProof = merkleTree.getHexProof(claimingAddress);
     }
   
-    // コントラクトへの送金とミント処理
-    console.log("MintNFT: Claiming NFTs with amount:", mintAmount);
-    console.log("Total Cost (Wei):", totalCostWei);
-    console.log("Total Gas Limit:", totalGasLimit);
-    console.log("Allowlist Max Mint Amount:", allowlistMaxMintAmount);
-    console.log("Hex Proof:", hexProof);
-    console.log("burnId:", burnId);
-
-  
-    console.log("Cost: ", totalCostWei);
-    console.log("Gas limit: ", totalGasLimit);
-
     setFeedback(` ${CONFIG.NFT_NAME} をミントしています。しばらくお待ちください。`);
     setClaimingNft(true);
+  
+    try {
+      const transaction = await blockchain.mintContract.mint(
+        mintAmount,
+        allowlistMaxMintAmount,
+        hexProof,
+        burnId,
+        {
+          value: totalCostWei,
+        }
+      );
 
-    console.log("Smart Contract Instance", blockchain.smartContract)
-    
-      // スマートコントラクトのメソッド呼び出しを確認
-      try {
-        // トランザクションの実行
-        const transaction = await blockchain.smartContract.mint(
-          mintAmount, 
-          allowlistMaxMintAmount, 
-          hexProof, 
-          burnId, 
-          {
-            value: totalCostWei,
-          }
-        );
-    
-        // トランザクションの確定を待つ
-        const receipt = await transaction.wait();
-    
-        // トランザクション成功後の処理
-        console.log("MintNFT: Minting successful", receipt);
-        setFeedback(
-          `${CONFIG.NFT_NAME}がミントできました! Opensea.io で確認してみましょう。`
-        );
-        setClaimingNft(false);
-        dispatch(fetchData(blockchain.account));
-    
-      } catch (err) {
-        // エラーハンドリング
-        console.error("MintNFT: Error in minting NFT", err);
-        setFeedback("Sorry, something went wrong please try again later.");
-        setClaimingNft(false);
+      console.log("Transaction sent:", transaction);
+      console.log("Transaction hash:", transaction.hash);
+
+      setFeedback(` ${CONFIG.NFT_NAME} をミントしています。しばらくお待ちください。`);
+
+      const receipt = await transaction.wait();
+
+      console.log("Transaction receipt:", receipt);
+      console.log("Transaction status:", receipt.status);
+  
+      setFeedback(`${CONFIG.NFT_NAME}がミントできました! Opensea.io で確認してみましょう。`);
+      setClaimingNft(false);
+      dispatch(fetchMintData(blockchain.account));
+  
+      handleSuccess(receipt);
+    } catch (err) {
+      console.error("MintNFT: Error in minting NFT", err);
+      setFeedback("Sorry, something went wrong please try again later.");
+      setClaimingNft(false);
+    }
+  }, [
+    CONFIG.WEI_COST,
+    CONFIG.GAS_LIMIT,
+    CONFIG.NFT_NAME,
+    blockchain.account,
+    blockchain.mintContract,
+    mintAmount,
+    dispatch,
+    handleSuccess,
+  ]);
+
+  // useCallback を使用してgetMintButtonStatus関数をメモ化
+  const getMintButtonStatus = useCallback(
+    (mintData, claimingNft, allowlistUserAmountData) => {
+      if (!mintData) {
+        return { disabled: true, text: "読み込み中" };
       }
-    };
 
-    // 数量を減らす関数
-    const decrementMintAmount = () => {
-        let newMintAmount = mintAmount - 1;
-        if (newMintAmount < 1) {
-          newMintAmount = 1;
+      if (claimingNft) {
+        return { disabled: true, text: "読み込み中" };
+      }
+
+      if (mintData.paused) {
+        return { disabled: true, text: "停止中" };
+      }
+
+      if (mintData.onlyAllowlisted && allowlistUserAmountData === 0) {
+        return { disabled: true, text: "アローリスト限定" };
+      }
+
+      const userMintedAmountNum = parseInt(mintData.userMintedAmount, 10);
+      const allowlistUserAmountNum = parseInt(allowlistUserAmountData, 10);
+      const publicSaleMaxMintAmountPerAddressNum = parseInt(mintData.publicSaleMaxMintAmountPerAddress, 10);
+
+      if (mintData.onlyAllowlisted && mintData.mintCount && userMintedAmountNum >= allowlistUserAmountNum) {
+        return { disabled: true, text: "上限に達しました" };
+      }
+
+      if (!mintData.onlyAllowlisted && mintData.mintCount && userMintedAmountNum >= publicSaleMaxMintAmountPerAddressNum) {
+        return { disabled: true, text: "上限に達しました" };
+      }
+
+      return { disabled: false, text: "MINT" };
+    },
+    []
+  );
+
+  // useMemo を使用してmintButtonStatusを計算し、メモ化
+  const mintButtonStatus = useMemo(() => getMintButtonStatus(data.mintData, claimingNft, allowlistUserAmountData), [
+    data.mintData,
+    claimingNft,
+    allowlistUserAmountData,
+    getMintButtonStatus,
+  ]);
+
+  // data.mintData、allowlistUserAmountData、claimingNftが変更された場合にフィードバックテキストを更新
+  useEffect(() => {
+    let feedbackText = `MINTボタンを押してNFTをミントしてください。`;
+  
+    console.log("Mint.js: data.mintData", data.mintData);
+    console.log("Mint.js: allowlistUserAmountData", allowlistUserAmountData);
+  
+    if (data.mintData.loading) {
+      feedbackText = "読み込み中です。しばらくお待ちください。";
+    } else if (data.mintData.paused) {
+      if (data.mintData.onlyAllowlisted) {
+        if (allowlistUserAmountData === 0) {
+          feedbackText = "現在ミントは停止中です。接続したウォレットはアローリストに登録されていません。";
+        } else if (Number(data.mintData.userMintedAmount) < allowlistUserAmountData) {
+          feedbackText = `現在ミントは停止中です。接続したウォレットはアローリストに登録されていて、あと ${allowlistUserAmountData - Number(data.mintData.userMintedAmount)} 枚ミントできます。`;
+        } else {
+          feedbackText = "現在ミントは停止中です。ミントの上限に達しました。";
         }
-        setMintAmount(newMintAmount);
-      };
-    
-      // 数量を10減らす関数
-      const decrementMintAmount10 = () => {
-        let newMintAmount = mintAmount - 10;
-        if (newMintAmount < 1) {
-          newMintAmount = 1;
+      } else {
+        feedbackText = "現在ミントは停止中です。";
+      }
+    } else {
+      if (data.mintData.onlyAllowlisted) {
+        if (allowlistUserAmountData === 0) {
+          feedbackText = "接続したウォレットはアローリストに登録されていません。";
+        } else if (Number(data.mintData.userMintedAmount) < allowlistUserAmountData) {
+          feedbackText = `あと ${allowlistUserAmountData - Number(data.mintData.userMintedAmount)} 枚ミントできます。`;
+        } else {
+          feedbackText = "あなたのアローリストのミントの上限に達しました。";
         }
-        setMintAmount(newMintAmount);
-      };
-    
-      // 数量を増やす関数
-      const incrementMintAmount = () => {
-        let newMintAmount = mintAmount + 1;
-
-        if(newMintAmount == 0 ){
-          newMintAmount = 1;
+      } else {
+        if (Number(data.mintData.publicSaleMaxMintAmountPerAddress) === 0 || Number(data.mintData.userMintedAmount) < Number(data.mintData.publicSaleMaxMintAmountPerAddress)) {
+          feedbackText = `あと ${Number(data.mintData.publicSaleMaxMintAmountPerAddress) === 0 ? "無制限に" : Number(data.mintData.publicSaleMaxMintAmountPerAddress) - Number(data.mintData.userMintedAmount) + "枚"} ミントできます。`;
+        } else {
+          feedbackText = "ミントの上限に達しました。";
         }
-        setMintAmount(newMintAmount);
-      };
-    
-      // 数量を10増やす関数
-      const incrementMintAmount10 = () => {
-        let newMintAmount = mintAmount + 10;
+      }
+    }
+  
+    setFeedback(feedbackText);
+  }, [data.mintData, allowlistUserAmountData, claimingNft]);
 
-        if(newMintAmount == 0 ){
-          newMintAmount = 1;
-        }
-        setMintAmount(newMintAmount);
-      };
-
-      const handleSuccess = (tx) => {
-        console.log("Transaction successful!", tx);
-        setMintSuccess(true);
-      };
-
-      const getMerkleData = useCallback(() => {
-        if (blockchain.account !== "" && blockchain.smartContract !== null) {
-          nameMapRef.current = allowlistAddresses.map(list => list[0]);
-          addressIdRef.current = nameMapRef.current.indexOf(blockchain.account);
-          if (data.allowlistType == 0) {
-            if (addressIdRef.current === -1) {
-              setAllowlistUserAmountData(0);
-            } else {
-              setAllowlistUserAmountData(allowlistAddresses[addressIdRef.current][1]);
-            }
-          } else if (data.allowlistType == 1) {
-            setAllowlistUserAmountData(data.allowlistUserAmount);
-          }
-        }
-      }, [blockchain.account, blockchain.smartContract, data.allowlistType, data.allowlistUserAmount]);
-      
-      console.log("MintNFT: Calculated allowlistUserAmountData", allowlistUserAmountData);
-
-      const getData = useCallback(() => {
-        if (blockchain.account !== "" && blockchain.smartContract !== null) {
-          dispatch(fetchData(blockchain.account));
-        }
-      }, [blockchain.account, blockchain.smartContract, dispatch]);
-
-      // Config.jsonを読み込むuseEffectを追加
-      useEffect(() => {
-        const fetchConfig = async () => {
-          try {
-            const response = await fetch('/config/Config.json');
-            const configData = await response.json();
-            SET_CONFIG(configData); // Configデータを状態に設定
-          } catch (error) {
-            console.error('Config.jsonの読み込みに失敗しました', error);
-          }
-        };
-
-        fetchConfig();
-      }, []);
-
-        // 現在のネットワークIDを取得するuseEffect
-        useEffect(() => {
-          if (window.ethereum) {
-            window.ethereum.request({ method: 'eth_chainId' })
-              .then(chainId => setCurrentNetworkId(parseInt(chainId, 16)))
-              .catch(err => console.error('Failed to get network ID', err));
-          }
-        }, []);
-    
-      useEffect(() => {
-        getData();
-      }, [blockchain.account, getData]);
-      
-      useEffect(() => {
-        getMerkleData();
-      }, [data.loading, getMerkleData]);
-
-        // ネットワークを切り替える関数
-        const switchNetwork = async () => {
-          try {
-            await window.ethereum.request({
-              method: 'wallet_switchEthereumChain',
-              params: [{ chainId: `0x${CONFIG.NETWORK.ID.toString(16)}` }],
-            });
-          } catch (switchError) {
-            console.error('Failed to switch network', switchError);
-          }
-        };
-
+  useEffect(() => {
+    if (newMintCount >= 1) {
+      setShowReopenButton(true);
+    } else {
+      setShowReopenButton(false);
+    }
+  }, [newMintCount]);
+  
 
   return (
-        <>
-        {blockchain.account === "" || blockchain.smartContract === null ? (
-          <div>
-            <p>{CONFIG.NETWORK.NAME} Network のウォレットを接続してください。</p>
-            <button onClick={connectFunc}>接続</button>
-            {blockchain.errorMsg !== "" && <p>{blockchain.errorMsg}</p>}
-          </div>
-        ) : (
+    <>
+      {blockchain.account === "" || blockchain.mintContract === null ? (
         <div>
-
-            <div className="mint-feedback-container">
-
+          <p>{CONFIG.NETWORK.NAME} Network のウォレットを接続してください。</p>
+          <button onClick={connectFunc}>接続</button>
+          {blockchain.errorMsg !== "" && <p>{blockchain.errorMsg}</p>}
+        </div>
+      ) : (
+        <div>
+          <div className="mint-feedback-container">
             <p>{feedback}</p>
-
-            </div>
-
+          </div>
 
           <div className="mint-container">
-
             <h3>Mint Amount</h3>
 
             <div className="mint-controls">
-
-              <button className="controls-button" disabled={claimingNft} onClick={decrementMintAmount10}>-10</button>
-              <button className="controls-button" disabled={claimingNft} onClick={decrementMintAmount}>-1</button>
+              <button className="controls-button" disabled={claimingNft} onClick={decrementMintAmount10}>
+                <span className="button-text">-10</span>
+              </button>
+              <button className="controls-button" disabled={claimingNft} onClick={decrementMintAmount}>
+                <span className="button-text">-1</span>
+              </button>
               <span className='mint-amount'>{mintAmount}</span>
-              <button className="controls-button" disabled={claimingNft} onClick={incrementMintAmount}>+1</button>
-              <button className="controls-button" disabled={claimingNft} onClick={incrementMintAmount10}>+10</button>
+              <button className="controls-button" disabled={claimingNft} onClick={incrementMintAmount}>
+                <span className="button-text">+1</span>
+              </button>
+              <button className="controls-button" disabled={claimingNft} onClick={incrementMintAmount10}>
+                <span className="button-text">+10</span>
+              </button>
+            </div>
+          </div>
 
+          <div className='web3button-container'>
+            {currentNetworkId === CONFIG.NETWORK.ID ? (
+              <button
+                disabled={mintButtonStatus.disabled}
+                onClick={() => {
+                  claimNFTs();
+                  getData();
+                }}
+                className="custom-web3-button"
+                style={{ backgroundColor: '#ffad58' }}
+
+              >
+                {mintButtonStatus.text}
+              </button>
+            ) : (
+              <button onClick={switchNetwork} className="custom-web3-button" style={{ backgroundColor: '#ffad58' }}>
+              Switch Network
+              </button>
+            )}
+          </div>
+
+          {mintSuccess && (
+            <div className="mint-success-message">
+              🎉ミントが成功しました！🎉
+            </div>
+          )}
+
+          {newMintCount >= 1 && (
+            <div class="button-container">
+
+            <button className="button" onClick={() => setShowPopup(true)}>
+              ポップアップを表示
+            </button>
             </div>
 
-        </div>
+          )}
 
-        <div className='web3button-container'>
-        {currentNetworkId === CONFIG.NETWORK.ID ? (
+          {showPopup && (
+                      <div className="popup">
+                        <div className="popup-content">
+                          <h3>ミントが成功しました！</h3>
+                          <p>次のステップをお選びください。</p>
+                          <ul className="task-list">
+                            <li>
+                              <span className="task-item">ミントする</span>
+                              <span className="task-status">{Number(data.mintData.userMintedAmount) !== 0 ? '✅' : '⬜'}</span>
+                            </li>
+                            <li>
+                              <span className="task-item">バー忍する</span>
+                              <span className="task-status">{Number(data.burnedTokenIds.length) !== 0 ? '✅' : '⬜'}</span>
+                            </li>
+                          </ul>
+                          <div className="popup-buttons">
+                            {Number(data.mintData.userMintedAmount) + Number(data.burnedTokenIds.length) >= 1 && (
+                              <button className="popup-button" onClick={() => { setShowPopup(false); window.location.href = '#cartbutton1'; }}>
+                                特典受け取り１体
+                              </button>
+                            )}
+                            {Number(data.mintData.userMintedAmount) + Number(data.burnedTokenIds.length) >= 2 && (
+                              <button className="popup-button" onClick={() => { setShowPopup(false); window.location.href = '#cartbutton2'; }}>
+                                特典受け取り２体
+                              </button>
+                            )}
+                            {Number(data.mintData.userMintedAmount) + Number(data.burnedTokenIds.length) >= 3 && (
+                              <button className="popup-button" onClick={() => { setShowPopup(false); window.location.href = '#cartbutton3'; }}>
+                                特典受け取り３体
+                              </button>
+                            )}
+                            {Number(data.mintData.userMintedAmount) + Number(data.burnedTokenIds.length) >= 4 && (
+                              <button className="popup-button" onClick={() => { setShowPopup(false); window.location.href = '#cartbutton4'; }}>
+                                特典受け取り４体以上
+                              </button>
+                            )}
+                            {Number(data.mintData.userMintedAmount) === 0 && Number(data.burnedTokenIds.length) === 0 ? (
+                              <button className="popup-button" onClick={() => { setShowPopup(false); window.location.href = '#burnin'; }}>
+                                バー忍へ
+                              </button>
+                            ) : (
+                              <>
+                                {Number(data.mintData.userMintedAmount) === 0 && (
+                                  <button className="popup-button" onClick={() => { setShowPopup(false); window.location.href = '#mint'; }}>
+                                    ミントへ
+                                  </button>
+                                )}
+                                {Number(data.burnedTokenIds.length) === 0 && (
+                                  <button className="popup-button" onClick={() => { setShowPopup(false); window.location.href = '#burnin'; }}>
+                                    バー忍へ
+                                  </button>
+                                )}
+                              </>
+                            )}
+                          </div>
+              </div>
+            </div>
+          )}
 
-            <button 
-              disabled={claimingNft || isMintButtonDisabled(data, allowlistUserAmountData, claimingNft)}
-              onClick={() => {
-                claimNFTs();
-                getData();
-              }}
-              className="custom-web3-button"
-              onSuccess={handleSuccess}
+          <div className='opensea-link-container'>
+            <a
+              href="https://opensea.io/collection/musubicollection"
+              target="_blank"
+              rel="noopener noreferrer"
             >
-              {getMintButtonText(data, claimingNft, allowlistUserAmountData)}
-            </button>
-       ) : (
-        <button
-          onClick={switchNetwork}
-          className="custom-web3-button"
-        >
-          Switch Network
-        </button>
+              OpenSeaでの確認はこちら
+            </a>
+          </div>
+        </div>
       )}
-        </div>
-
-        <div className='credit-card-container'>
-
-            <button 
-              hidden={!CONFIG.CREDIT_CARD_MODE}
-              disabled={claimingNft || isMintButtonDisabled(data, allowlistUserAmountData)}
-              onClick={() => {
-                window.location.href = CONFIG.CREDIT_CARD_LINK + "Address=" + blockchain.account + "&quantity=" + mintAmount;
-              }}
-              className="credit-card-button"
-            >
-              {getCreditCardMintButtonText(data, claimingNft, allowlistUserAmountData)}
-            </button>
-        </div>
-
-        {mintSuccess && (
-          <div className="mint-success-message">
-            🎉ミントが成功しました！🎉
-          </div>
-        )}
-
-          </div>
-
-        )}
-      </>
-    );
-  }
-
-export default Mint;
-
-// ミントボタンが無効かどうかを決定する関数
-function isMintButtonDisabled(data, allowlistUserAmountData, claimingNft) {
-  console.log("MintNFT: Checking if mint button should be disabled", {
-    claimingNft,
-    paused: data.paused,
-    onlyAllowlisted: data.onlyAllowlisted,
-    allowlistUserAmountData,
-    userMintedAmount: data.userMintedAmount.toString(),
-    mintCount: data.mintCount,
-  });
-
-  if (claimingNft) return true; // ミント中はボタン無効
-  if (data.paused) return true; // ミントが一時停止中はボタン無効
-
-  const userMintedAmountNum = parseInt(data.userMintedAmount, 10);
-  const allowlistUserAmountNum = parseInt(allowlistUserAmountData, 10);
-  const publicSaleMaxMintAmountPerAddressNum = parseInt(data.publicSaleMaxMintAmountPerAddress, 10);
-
-  // アローリスト限定ミントでユーザーがアローリストに含まれていない場合は無効
-  if (data.onlyAllowlisted && allowlistUserAmountData === 0) return true;
-
-  // アローリスト限定ミントでユーザーのミント数が上限に達している
-  if (data.onlyAllowlisted && data.mintCount && userMintedAmountNum >= allowlistUserAmountNum) return true;
-  
-  // パブリックセールでユーザーのミント数が上限に達している
-  if (!data.onlyAllowlisted && data.mintCount && userMintedAmountNum >= publicSaleMaxMintAmountPerAddressNum) return true;
-
-  return false; // それ以外の場合はボタン有効
+    </>
+  );
 }
 
-  
-  // ミントボタンのテキストを決定する関数
-  function getMintButtonText(data, claimingNft, allowlistUserAmountData) {
-    if (claimingNft) return "読み込み中";
-    if (data.paused) return "停止中";
-    if (data.onlyAllowlisted && allowlistUserAmountData === 0) return "アローリスト限定";
-
-    const userMintedAmountNum = parseInt(data.userMintedAmount, 10);
-    const allowlistUserAmountNum = parseInt(allowlistUserAmountData, 10);
-    const publicSaleMaxMintAmountPerAddressNum = parseInt(data.publicSaleMaxMintAmountPerAddress, 10);
-
-    if (data.mintCount && ((data.onlyAllowlisted && userMintedAmountNum >= allowlistUserAmountNum) || (!data.onlyAllowlisted && userMintedAmountNum >= publicSaleMaxMintAmountPerAddressNum))) {
-      return "上限に達しました";
-    }
-
-    return "MINT (ETH)";
-  }
-
-  
-  // クレジットカード用のミントボタンのテキストを決定する関数
-  function getCreditCardMintButtonText(data, claimingNft, allowlistUserAmountData) {
-    // ミントボタンの状態テキストを取得
-    const mintButtonText = getMintButtonText(data, claimingNft, allowlistUserAmountData);
-  
-    // 「読み込み中」や「停止中」などの状態はそのまま使用
-    if (mintButtonText !== "MINT (ETH)") {
-      return mintButtonText;
-    }
-  
-    // スマートフォン表示の閾値（ここでは768pxとします）
-    const mobileViewThreshold = 768;
-    
-    // 現在のビューポートの幅を取得
-    const viewportWidth = window.innerWidth;
-
-    // スマートフォン表示の場合、改行を含むテキストを返す
-    if (viewportWidth <= mobileViewThreshold) {
-      return "MINT\n（クレジットカード）";
-    }
-
-    // デスクトップ表示の場合、通常のテキストを返す
-    return "MINT (クレジットカード)";
-  }
-  
-  
+export default Mint;
