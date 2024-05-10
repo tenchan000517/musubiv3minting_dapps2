@@ -40,6 +40,17 @@
   font-size: 0.9rem; /* Smaller text on mobile */
 }
 
+.sale-type {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.sale-type-text {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+
 @media (min-width: 768px) {
   .popup-button {
     max-width: 300px; /* Larger size on PC */

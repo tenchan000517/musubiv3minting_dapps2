@@ -86,6 +86,19 @@ export const fetchBurninData = (account) => {
       const burninContract = blockchain.burninContract;
       console.log("fetchBurninData: burninContract", burninContract);
 
+      // Configファイルを非同期で読み込む
+      const configResponse = await fetch("/config/config.json");
+      const config = await configResponse.json();
+
+      // 現在のネットワークIDを取得
+      const currentNetworkId = await window.ethereum.request({ method: 'eth_chainId' });
+
+      // config.NETWORK.IDと比較
+      if (currentNetworkId !== `0x${config.NETWORK.ID.toString(16)}`) {
+        console.log("fetchBurninData: ネットワークが異なるため、データ取得をスキップします");
+        return;
+      }
+
 //      const currentPhase = (await burninContract.burninPhase()).toNumber(); // バーニングフェーズを取得
 
       let totalBurnin, userBurnedAmount, paused, onlyAllowlisted, maxBurnAmountPerTransaction, burnCount, publicSaleMaxBurnAmountPerAddress, allowlistUserAmount, allowlistType, tokensOfOwner, burnedTokenIds;

@@ -212,32 +212,34 @@ function Mint() {
       if (!mintData) {
         return { disabled: true, text: "読み込み中" };
       }
-  
+
       if (claimingNft) {
         return { disabled: true, text: "読み込み中" };
       }
-  
+
       if (mintData.paused) {
         return { disabled: true, text: "停止中" };
       }
-  
-      if (CONFIG.onlyAllowlisted) {
-        if (allowlistUserAmountData === 0) {
-          return { disabled: true, text: "アローリスト限定" };
-        }
-  
-        if (Number(data.mintData.userMintedAmount) >= allowlistUserAmountData - newMintCount) {
-          return { disabled: true, text: "上限に達しました" };
-        }
-      } else {
-        if (Number(data.mintData.publicSaleMaxMintAmountPerAddress) === 0 || Number(data.mintData.userMintedAmount) >= Number(data.mintData.publicSaleMaxMintAmountPerAddress)) {
-          return { disabled: true, text: "上限に達しました" };
-        }
+
+      if (mintData.onlyAllowlisted && allowlistUserAmountData === 0) {
+        return { disabled: true, text: "アローリスト限定" };
       }
-  
+
+      const userMintedAmountNum = parseInt(mintData.userMintedAmount, 10);
+      const allowlistUserAmountNum = parseInt(allowlistUserAmountData, 10);
+      const publicSaleMaxMintAmountPerAddressNum = parseInt(mintData.publicSaleMaxMintAmountPerAddress, 10);
+
+      if (mintData.onlyAllowlisted && mintData.mintCount && userMintedAmountNum >= allowlistUserAmountNum) {
+        return { disabled: true, text: "上限に達しました" };
+      }
+
+      if (!mintData.onlyAllowlisted && mintData.mintCount && userMintedAmountNum >= publicSaleMaxMintAmountPerAddressNum) {
+        return { disabled: true, text: "上限に達しました" };
+      }
+
       return { disabled: false, text: "MINT" };
     },
-    [CONFIG.onlyAllowlisted, data.mintData.userMintedAmount, data.mintData.publicSaleMaxMintAmountPerAddress, newMintCount]
+    []
   );
 
   // useMemo を使用してmintButtonStatusを計算し、メモ化
@@ -249,18 +251,20 @@ function Mint() {
   ]);
 
   // data.mintData、allowlistUserAmountData、claimingNftが変更された場合にフィードバックテキストを更新
-
   useEffect(() => {
     let feedbackText = `MINTボタンを押してNFTをミントしてください。`;
+  
+    console.log("Mint.js: data.mintData", data.mintData);
+    console.log("Mint.js: allowlistUserAmountData", allowlistUserAmountData);
   
     if (data.mintData.loading) {
       feedbackText = "読み込み中です。しばらくお待ちください。";
     } else if (data.mintData.paused) {
-      if (CONFIG.onlyAllowlisted) {
+      if (data.mintData.onlyAllowlisted) {
         if (allowlistUserAmountData === 0) {
           feedbackText = "現在ミントは停止中です。接続したウォレットはアローリストに登録されていません。";
-        } else if (Number(data.mintData.userMintedAmount) < allowlistUserAmountData - newMintCount) {
-          feedbackText = `現在ミントは停止中です。接続したウォレットはアローリストに登録されていて、あと ${allowlistUserAmountData - newMintCount - Number(data.mintData.userMintedAmount)} 枚ミントできます。`;
+        } else if (Number(data.mintData.userMintedAmount) < allowlistUserAmountData) {
+          feedbackText = `現在ミントは停止中です。接続したウォレットはアローリストに登録されていて、あと ${allowlistUserAmountData - Number(data.mintData.userMintedAmount)} 枚ミントできます。`;
         } else {
           feedbackText = "現在ミントは停止中です。ミントの上限に達しました。";
         }
@@ -268,11 +272,11 @@ function Mint() {
         feedbackText = "現在ミントは停止中です。";
       }
     } else {
-      if (CONFIG.onlyAllowlisted) {
+      if (data.mintData.onlyAllowlisted) {
         if (allowlistUserAmountData === 0) {
           feedbackText = "接続したウォレットはアローリストに登録されていません。";
-        } else if (Number(data.mintData.userMintedAmount) < allowlistUserAmountData - newMintCount) {
-          feedbackText = `あと ${allowlistUserAmountData - newMintCount - Number(data.mintData.userMintedAmount)} 枚ミントできます。`;
+        } else if (Number(data.mintData.userMintedAmount) < allowlistUserAmountData) {
+          feedbackText = `あと ${allowlistUserAmountData - Number(data.mintData.userMintedAmount)} 枚ミントできます。`;
         } else {
           feedbackText = "あなたのアローリストのミントの上限に達しました。";
         }
@@ -286,8 +290,7 @@ function Mint() {
     }
   
     setFeedback(feedbackText);
-  }, [CONFIG.onlyAllowlisted, data.mintData, allowlistUserAmountData, newMintCount]);
-  
+  }, [data.mintData, allowlistUserAmountData, claimingNft]);
 
   useEffect(() => {
     if (newMintCount >= 1) {
@@ -308,12 +311,6 @@ function Mint() {
         </div>
       ) : (
         <div>
-
-
-          <div className="sale-type">
-            <span className="sale-type-text">{CONFIG.onlyAllowlisted ? "ALセール" : "パブリックセール"}</span>
-          </div>
-
           <div className="mint-feedback-container">
             <p>{feedback}</p>
           </div>

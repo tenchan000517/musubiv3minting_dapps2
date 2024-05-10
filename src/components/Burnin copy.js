@@ -66,10 +66,10 @@ function Burnin() {
         const configData = await response.json();
         SET_CONFIG(configData.BURNIN);
       } catch (error) {
-        console.error('Config.jsonの読み込みに失敗しました', error);
+       console.error('Config.jsonの読み込みに失敗しました', error);
       }
     };
-  
+
     fetchConfig();
   }, []);
 
@@ -254,32 +254,30 @@ function Burnin() {
       if (!burninData) {
         return { disabled: true, text: "読み込み中" };
       }
-  
+
       if (claimingNft) {
         return { disabled: true, text: "読み込み中" };
       }
-  
+
       if (burninData.paused) {
         return { disabled: true, text: "停止中" };
       }
-  
-      if (CONFIG.onlyAllowlisted) {
-        if (allowlistUserAmountData === 0) {
-          return { disabled: true, text: "アローリスト限定" };
-        }
-  
-        if (burninData.userBurnedAmount >= allowlistUserAmountData - burninCount) {
-          return { disabled: true, text: "上限に達しました" };
-        }
+
+      if (burninData.onlyAllowlisted && allowlistUserAmountData === 0) {
+        return { disabled: true, text: "アローリスト限定" };
       }
-  
+
+      if (burninData.onlyAllowlisted && burninData.userBurnedAmount >= allowlistUserAmountData) {
+        return { disabled: true, text: "上限に達しました" };
+      }
+
       if (data.burninData.burnedTokenIds && filterdTokenIds[burnTokenIdNumber] && data.burninData.burnedTokenIds.some(burnedTokenId => burnedTokenId.eq(filterdTokenIds[burnTokenIdNumber]))) {
         return { disabled: true, text: "バー忍済みです" };
       }
-  
+
       return { disabled: false, text: "バー忍" };
     },
-    [CONFIG.onlyAllowlisted, data.burninData.burnedTokenIds, filterdTokenIds, burnTokenIdNumber, burninCount]
+    [data.burninData.burnedTokenIds, filterdTokenIds, burnTokenIdNumber]
   );
 
   // useMemo を使用してburnButtonStatusを計算し、メモ化
@@ -291,41 +289,41 @@ function Burnin() {
   ]);
 
   // data、allowlistUserAmountData、claimingNftが変更された場合にフィードバックテキストを更新
-useEffect(() => {
-  let feedbackText = `ボタンを押してNFTをバー忍してください。`;
-
-  if (data.burninData.loading) {
-    feedbackText = "読み込み中です。しばらくお待ちください。";
-  } else if (data.burninData.paused) {
-    if (CONFIG.onlyAllowlisted) {
-      if (allowlistUserAmountData === 0) {
-        feedbackText = "現在バー忍は停止中です。接続したウォレットはアローリストに登録されていません。";
-      } else if (data.burninData.userBurnedAmount < allowlistUserAmountData - burninCount) {
-        feedbackText = `現在バー忍は停止中です。接続したウォレットはアローリストに登録されていて、あと ${allowlistUserAmountData - burninCount - data.burninData.userBurnedAmount} 枚バー忍できます。`;
+  useEffect(() => {
+    let feedbackText = `ボタンを押してNFTをバー忍してください。`;
+  
+    if (data.burninData.loading) {
+      feedbackText = "読み込み中です。しばらくお待ちください。";
+    } else if (data.burninData.paused) {
+      if (data.burninData.onlyAllowlisted) {
+        if (allowlistUserAmountData === 0) {
+          feedbackText = "現在バー忍は停止中です。接続したウォレットはアローリストに登録されていません。";
+        } else if (data.burninData.userBurnedAmount < allowlistUserAmountData) {
+          feedbackText = `現在バー忍は停止中です。接続したウォレットはアローリストに登録されていて、あと ${allowlistUserAmountData - data.burninData.userBurnedAmount} 枚バー忍できます。`;
+        } else {
+          feedbackText = "現在バー忍は停止中です。バー忍の上限に達しました。";
+        }
       } else {
-        feedbackText = "現在バー忍は停止中です。バー忍の上限に達しました。";
+        feedbackText = "現在バー忍は停止中です。";
       }
     } else {
-      feedbackText = "現在バー忍は停止中です。";
-    }
-  } else {
-    if (CONFIG.onlyAllowlisted) {
-      if (allowlistUserAmountData === 0) {
-        feedbackText = "接続したウォレットはアローリストに登録されていません。";
-      } else if (data.burninData.userBurnedAmount < allowlistUserAmountData - burninCount) {
-        feedbackText = `あと ${allowlistUserAmountData - burninCount - data.burninData.userBurnedAmount} 枚バー忍できます。`;
+      if (data.burninData.onlyAllowlisted) {
+        if (allowlistUserAmountData === 0) {
+          feedbackText = "接続したウォレットはアローリストに登録されていません。";
+        } else if (data.burninData.userBurnedAmount < allowlistUserAmountData) {
+          feedbackText = `あと ${allowlistUserAmountData - data.burninData.userBurnedAmount} 枚バー忍できます。`;
+        } else {
+          feedbackText = "あなたのアローリストのミントの上限に達しました。";
+        }
+      } else if (filteredTokenIds.length === 0) { // この条件を追加
+        feedbackText = "バー忍可能なNFTがありません。"; // この行を変更
       } else {
-        feedbackText = "あなたのアローリストのミントの上限に達しました。";
+        feedbackText = `バー忍するNFTを選んでください。`;
       }
-    } else if (filteredTokenIds.length === 0) {
-      feedbackText = "バー忍可能なNFTがありません。";
-    } else {
-      feedbackText = `バー忍するNFTを選んでください。`;
     }
-  }
-
-  setFeedback(feedbackText);
-}, [CONFIG.onlyAllowlisted, data.burninData, allowlistUserAmountData, claimingNft, filteredTokenIds.length, burninCount]);
+  
+    setFeedback(feedbackText);
+  }, [data.burninData, allowlistUserAmountData, claimingNft, filteredTokenIds.length]);
   
   useEffect(() => {
     if (burninCount >= 1) {
@@ -379,11 +377,6 @@ return (
       </div>
     ) : (
       <div>
-
-        <div className="sale-type">
-          <span className="sale-type-text">{CONFIG.onlyAllowlisted ? "ALセール" : "パブリックセール"}</span>
-        </div>
-
         <div className="mint-feedback-container">
           <p>{feedback}</p>
         </div>

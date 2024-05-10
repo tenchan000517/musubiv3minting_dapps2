@@ -62,7 +62,7 @@ export const connect = (walletData) => async (dispatch) => {
 
   try {
     // Configファイルを非同期で読み込む
-    const configResponse = await fetch("/config/Config.json");
+    const configResponse = await fetch("/config/config.json");
     const config = await configResponse.json();
   
     // Mint.js用のABIファイルのパスを構築して読み込む
